@@ -86,7 +86,8 @@ Extension-host verification: run **comPREssOR: Compatibility Report** after inst
   users. Sideload a VSIX (above) until publish completes.
 - Intended publish path (when ready): **Open VSX only** (`ovsx publish`).
   Microsoft Marketplace publish is blocked by `assert-cursor-target.mjs`
-  (REQ-HOST-05).
+  (REQ-HOST-05). Until `OVSX_TOKEN` is configured, `release.yml` skips Open VSX
+  publish (exit 0) and ships the VSIX via GitHub Release only.
 - Namespace: `soltrinox` (human action: Eclipse Open VSX Publisher Agreement +
   `ovsx create-namespace soltrinox`).
 
@@ -120,5 +121,9 @@ Status: **pending human**. Required before gallery install works:
 1. Sign the Eclipse Foundation Open VSX Publisher Agreement at https://open-vsx.org/
 2. Authenticate and run `ovsx create-namespace soltrinox`
 3. Store `OVSX_TOKEN` as a GitHub Actions secret on `soltrinox/comPREssOR`
+
+Until then, tagged releases still succeed: `release.yml` uploads the VSIX to the
+GitHub Release and **skips** Open VSX publish when `OVSX_TOKEN` is unset
+(`[SKIP]`, exit 0). Sideload remains the install path.
 
 See `docs/PUBLISHING.md`.

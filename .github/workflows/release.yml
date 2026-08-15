@@ -36,7 +36,7 @@ jobs:
           body: |
             Cursor-only extension (`soltrinox.compressor`).
 
-            Install from Open VSX or this VSIX. Non-Cursor hosts refuse `~/.cursor` writes (fail-closed).
+            Primary install: sideload this VSIX (Open VSX listing pending). Non-Cursor hosts refuse `~/.cursor` writes (fail-closed).
             Microsoft Marketplace is not a supported publish target.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
           OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
         run: |
           if [ -z "${OVSX_TOKEN:-}" ]; then
-            echo "[FAIL] OVSX_TOKEN secret missing"
-            exit 1
+            echo "[SKIP] OVSX_TOKEN not configured — Open VSX publish pending; use GitHub Release VSIX sideload"
+            exit 0
           fi
           npx ovsx publish *.vsix -p "$OVSX_TOKEN"

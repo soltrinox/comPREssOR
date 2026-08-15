@@ -6,6 +6,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- `release.yml`: missing `OVSX_TOKEN` skips Open VSX publish with `[SKIP]` and
+  exit 0 (GitHub Release VSIX sideload remains primary; CI stays green). Docs
+  aligned in `docs/PUBLISHING.md`, `docs/PREFLIGHT.md`, and README.
+
 ## [0.1.4] - 2026-08-14
 
 ### Changed

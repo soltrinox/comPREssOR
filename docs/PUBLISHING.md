@@ -14,8 +14,10 @@ Complete these before the first **gallery** release (Open VSX listing):
 2. **Claim Open VSX namespace** `soltrinox`:
    - Sign the Eclipse Foundation Open VSX Publisher Agreement
    - `npx ovsx create-namespace soltrinox`
-3. **Store secrets** on the GitHub repo:
-   - `OVSX_TOKEN` — Open VSX personal access token (required for `release.yml`)
+3. **Store secrets** on the GitHub repo (optional until gallery publish):
+   - `OVSX_TOKEN` — Open VSX personal access token. When unset, `release.yml`
+     **skips** `ovsx publish` with `[SKIP]` and exits 0; GitHub Release VSIX
+     sideload remains the primary path and CI stays green.
 4. **Authorize** a human to run the first push + tag (agents must not push or `ovsx publish` without prior authorization and a present token).
 
 ## Ready-for-human publish sequence
@@ -26,8 +28,11 @@ git remote add origin git@github.com:soltrinox/comPREssOR.git   # once
 git push -u origin main
 git tag v0.1.0
 git push origin v0.1.0
-# release.yml builds the VSIX, attaches it to the GitHub Release, and runs:
+# release.yml always builds the VSIX and attaches it to the GitHub Release.
+# If OVSX_TOKEN is set, it also runs:
 #   npx ovsx publish *.vsix -p $OVSX_TOKEN
+# If OVSX_TOKEN is missing, Open VSX publish is skipped (exit 0); use the
+# Release VSIX for sideload until the namespace/token are ready.
 ```
 
 ## Verify after publish

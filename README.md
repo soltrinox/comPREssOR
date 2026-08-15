@@ -165,7 +165,9 @@ inject-path figure. Details: [docs/WHY.md](docs/WHY.md).
 - [docs/PREFLIGHT.md](docs/PREFLIGHT.md): host facts and current VSIX sideload
   install path (Open VSX pending).
 - [docs/PUBLISHING.md](docs/PUBLISHING.md): Open VSX publishing checklist
-  (gallery install after human publish).
+  (gallery install after human publish). Tagged releases attach a VSIX to
+  GitHub Releases even when `OVSX_TOKEN` is unset; Open VSX publish is skipped
+  until the secret is configured.
 
 ## Licence
 
