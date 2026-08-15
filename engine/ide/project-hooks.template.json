@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "./hooks/chat-compressor.sh"
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "./hooks/chat-compressor.sh"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "./hooks/chat-compressor.sh"
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "./hooks/chat-compressor.sh"
+      }
+    ]
+  }
+}

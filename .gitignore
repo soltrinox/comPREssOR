@@ -1,0 +1,36 @@
+# Local engine state and captured session data — never committed
+state/
+runs/
+test-results/
+**/fixtures/imported/
+
+# Secrets and local environment
+.env
+*.env.local
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+build/lib/
+engine/dist/
+
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Build-time extension payload (wheel, hooks, rules, skills) — generated, not sourced
+extension/resources/
+
+# Packaged artifacts
+*.vsix
+
+# OS
+.DS_Store
+*.egg-info/
+
+engine/build/
+extension/compressor-*.vsix

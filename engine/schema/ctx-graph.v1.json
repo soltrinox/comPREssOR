@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chat-compressor.local/schema/ctx-graph.v1.json",
+  "title": "ctx-graph/v1",
+  "type": "object",
+  "required": ["schema", "nodes", "edges"],
+  "properties": {
+    "schema": { "const": "ctx-graph/v1" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "label", "status", "valid_start"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["Turn", "Topic", "Fact", "OpenItem", "Event"]
+          },
+          "label": { "type": "string" },
+          "summary": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["active", "superseded", "deprecated"]
+          },
+          "valid_start": { "type": "string" },
+          "valid_end": { "type": ["string", "null"] },
+          "attrs": { "type": "object" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "src", "dst", "rel"],
+        "properties": {
+          "id": { "type": "string" },
+          "src": { "type": "string" },
+          "dst": { "type": "string" },
+          "rel": {
+            "type": "string",
+            "enum": ["mentions", "contains", "continues", "supersedes", "derived_from"]
+          },
+          "valid_start": { "type": "string" },
+          "valid_end": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

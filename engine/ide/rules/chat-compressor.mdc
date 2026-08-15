@@ -1,0 +1,16 @@
+---
+description: Prefer CHAT-COMPRESSOR session memory (HOT_SET / extractive FORWARD_GIST / state ids) over restating full chat history.
+alwaysApply: true
+---
+
+# CHAT-COMPRESSOR (session memory)
+
+Compressed Agent Chat memory lives under `~/.cursor/context-graphs/` (override with `CHAT_COMPRESSOR_STATE_DIR` in `~/.cursor/chat-compressor.env`).
+
+When session context includes `HOT_SET`, `FORWARD_GIST`, or `STATE` lines from the compressor:
+
+- Prefer HOT_SET / extractive FORWARD_GIST over restating the full conversation.
+- Treat the forward payload as compact memory, not a transcript dump (Pattern-1 vocab decode is debug-only unless `CHAT_COMPRESSOR_INJECT_P1=1`).
+- Do not invent stronger claims than the injected context supports.
+
+Hooks run outside the model path (model-agnostic). They never require `CURSOR_API_KEY`.

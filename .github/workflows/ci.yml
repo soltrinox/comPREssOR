@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install + pytest
+        working-directory: engine
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev]"
+          python -m pytest tests
+
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - name: Scrub check
+        working-directory: extension
+        run: node build/scrub-check.mjs
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install deps
+        working-directory: extension
+        run: npm ci
+      - name: Typecheck + unit tests
+        working-directory: extension
+        run: |
+          npm run compile
+          npm test
+      - name: Package VSIX
+        working-directory: extension
+        run: npm run package
+      - name: Assert VSIX contents
+        working-directory: extension
+        run: |
+          set -euo pipefail
+          VSIX=$(ls -1 *.vsix | head -1)
+          echo "VSIX=$VSIX"
+          npx vsce ls --packagePath "$VSIX" > /tmp/vsce-ls.txt
+          ! grep -E 'test-results/|runs/|/state/|fixtures/imported/|\.env$|WHITEOB.*\.pdf' /tmp/vsce-ls.txt
+          echo "[PASS] vsce ls scrub"

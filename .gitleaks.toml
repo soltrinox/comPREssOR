@@ -1,0 +1,7 @@
+title = "comPREssOR gitleaks"
+
+[allowlist]
+description = "Documentation references"
+paths = [
+  "CHANGELOG.md",
+]

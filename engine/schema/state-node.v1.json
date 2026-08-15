@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chat-compressor.local/schema/state-node.v1.json",
+  "title": "state-node/v1",
+  "type": "object",
+  "required": ["state_id", "agent_id", "t", "k", "d", "producer", "blob_path"],
+  "properties": {
+    "state_id": { "type": "string" },
+    "parent_id": { "type": ["string", "null"] },
+    "agent_id": { "type": "string" },
+    "t": { "type": "integer", "minimum": 1 },
+    "k": { "type": "integer", "minimum": 1 },
+    "d": { "type": "integer", "minimum": 1 },
+    "producer": { "type": "string", "enum": ["embed", "gist-hf"] },
+    "blob_path": { "type": "string" },
+    "graph_path": { "type": ["string", "null"] },
+    "created_at": { "type": "string" },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "tokenizer_id": { "type": "string" },
+        "tool_status": { "type": "string" },
+        "sampling_map": { "type": "string" }
+      }
+    },
+    "tensors": {
+      "type": "object",
+      "properties": {
+        "C": { "description": "C_t [k x d] float32" },
+        "M": { "description": "M_t [k] float32 live-slot mask" },
+        "KV": { "description": "optional [L x k x d_k] HF gist path only" }
+      }
+    }
+  }
+}

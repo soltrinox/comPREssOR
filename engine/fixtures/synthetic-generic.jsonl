@@ -1,0 +1,8 @@
+{"role":"user","message":{"content":[{"type":"text","text":"Create a todo named \"buy groceries\" for the household inventory clerk."}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Created open item \"buy groceries\". The list is empty until you add products."}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"Add milk and bread to the groceries list."}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Added \"milk\" and \"bread\" under buy groceries. Both items are open."}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"Mark \"milk\" done after the morning delivery."}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Marked \"milk\" complete. \"bread\" remains open on buy groceries."}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"What is left on the list, and what is already complete?"}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Open: \"bread\". Completed: \"milk\". Parent todo \"buy groceries\" is still open until bread is done."}]}}

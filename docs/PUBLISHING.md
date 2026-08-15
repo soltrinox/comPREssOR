@@ -1,0 +1,38 @@
+# Publishing checklist (Open VSX only)
+
+Identity: GitHub `soltrinox/comPREssOR`, Open VSX namespace/publisher `soltrinox`, extension id `soltrinox.compressor`.
+
+## Human blockers (Phase 9)
+
+Complete these before the first public release:
+
+1. **Create GitHub repo** `soltrinox/comPREssOR` (if missing) and grant push credentials.
+2. **Claim Open VSX namespace** `soltrinox`:
+   - Sign the Eclipse Foundation Open VSX Publisher Agreement
+   - `npx ovsx create-namespace soltrinox`
+3. **Store secrets** on the GitHub repo:
+   - `OVSX_TOKEN` — Open VSX personal access token (required for `release.yml`)
+4. **Authorize** a human to run the first push + tag (agents must not push or `ovsx publish` without prior authorization and a present token).
+
+## Ready-for-human publish sequence
+
+```bash
+# From a clean main with CI green:
+git remote add origin git@github.com:soltrinox/comPREssOR.git   # once
+git push -u origin main
+git tag v0.1.0
+git push origin v0.1.0
+# release.yml builds the VSIX, attaches it to the GitHub Release, and runs:
+#   npx ovsx publish *.vsix -p $OVSX_TOKEN
+```
+
+## Verify after publish
+
+1. Open VSX listing: `https://open-vsx.org/extension/soltrinox/compressor`
+2. In Cursor → Extensions, search **comPREssOR** / `soltrinox.compressor`
+3. Fresh install: Compatibility Report ALLOW, hooks merge (V-01 / V-08 / V-10)
+
+## Hard rules
+
+- **Never** `vsce publish` to Microsoft Marketplace (`assert-cursor-target.mjs` blocks it)
+- Never commit `.env`, absolute home paths, `runs/`, `test-results/`, or imported fixtures

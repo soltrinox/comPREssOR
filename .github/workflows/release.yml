@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-openvsx:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Marketplace guard
+        working-directory: extension
+        run: node build/assert-cursor-target.mjs
+      - name: Scrub check
+        working-directory: extension
+        run: node build/scrub-check.mjs
+      - name: Build + package
+        working-directory: extension
+        run: |
+          npm ci
+          npm run package
+      - name: Upload VSIX to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: extension/*.vsix
+          body: |
+            Cursor-only extension (`soltrinox.compressor`).
+
+            Install from Open VSX or this VSIX. Non-Cursor hosts refuse `~/.cursor` writes (fail-closed).
+            Microsoft Marketplace is not a supported publish target.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish to Open VSX
+        working-directory: extension
+        env:
+          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+        run: |
+          if [ -z "${OVSX_TOKEN:-}" ]; then
+            echo "[FAIL] OVSX_TOKEN secret missing"
+            exit 1
+          fi
+          npx ovsx publish *.vsix -p "$OVSX_TOKEN"

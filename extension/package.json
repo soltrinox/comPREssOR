@@ -1,0 +1,166 @@
+{
+  "name": "compressor",
+  "displayName": "comPREssOR",
+  "description": "Cursor-only compressed Agent Chat memory via hooks and a vendored Python engine. Refuses non-Cursor hosts (fail-closed).",
+  "version": "0.1.3",
+  "publisher": "soltrinox",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soltrinox/comPREssOR.git"
+  },
+  "bugs": {
+    "url": "https://github.com/soltrinox/comPREssOR/issues"
+  },
+  "homepage": "https://github.com/soltrinox/comPREssOR#readme",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "cursor",
+    "hooks",
+    "context",
+    "compression",
+    "chat-compressor"
+  ],
+  "galleryBanner": {
+    "color": "#0b1220",
+    "theme": "dark"
+  },
+  "qna": false,
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": {
+      "supported": false
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "chatCompressor.compatibilityReport",
+        "title": "comPREssOR: Compatibility Report",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.installHooks",
+        "title": "comPREssOR: Install / Repair Hooks",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.installProjectHooks",
+        "title": "comPREssOR: Install Project Hooks (opt-in)",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.showStatus",
+        "title": "comPREssOR: Show Status",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.reprovisionRuntime",
+        "title": "comPREssOR: Reprovision Python Runtime",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.purgeState",
+        "title": "comPREssOR: Purge Context Graphs (destructive)",
+        "enablement": "chatCompressor.hostSupported"
+      },
+      {
+        "command": "chatCompressor.openEnvFile",
+        "title": "comPREssOR: Open Env File",
+        "enablement": "chatCompressor.hostSupported"
+      }
+    ],
+    "configuration": {
+      "title": "comPREssOR",
+      "properties": {
+        "chatCompressor.pythonPath": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Preferred Python 3.11+ interpreter. Empty = auto-discover."
+        },
+        "chatCompressor.stateDir": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Override CHAT_COMPRESSOR_STATE_DIR. Empty = ~/.cursor/context-graphs."
+        },
+        "chatCompressor.kMax": {
+          "type": "number",
+          "default": 32,
+          "scope": "application",
+          "description": "Max gist slots (K_MAX)."
+        },
+        "chatCompressor.graphFlushEvery": {
+          "type": "number",
+          "default": 5,
+          "scope": "application",
+          "description": "Graph flush cadence (GRAPH_FLUSH_EVERY)."
+        },
+        "chatCompressor.forwardBudget": {
+          "type": "number",
+          "default": 1024,
+          "scope": "application",
+          "description": "Forward pack token budget (CHAT_COMPRESSOR_FORWARD_BUDGET)."
+        },
+        "chatCompressor.injectP1": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "description": "Allow Pattern-1 vocab decode into forward channel when Jaccard gate passes."
+        },
+        "chatCompressor.strictHostGate": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "When false, softens deny UI only. Never enables ~/.cursor writes on non-Cursor hosts."
+        },
+        "chatCompressor.autoInstallHooks": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "On allowlisted activation, install shim + merge hooks automatically."
+        },
+        "chatCompressor.enableProjectHooksCommand": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Expose the opt-in project-hooks install command."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node build/assert-cursor-target.mjs && npm run build",
+    "vscode:uninstall": "node ./dist/uninstall.js",
+    "build": "node build/build-wheel.mjs && node esbuild.mjs",
+    "compile": "tsc --noEmit",
+    "watch": "node esbuild.mjs --watch",
+    "test": "vitest run",
+    "package": "npm run vscode:prepublish && vsce package --no-dependencies",
+    "scrub": "node build/scrub-check.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.93.0",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.24.0",
+    "ovsx": "^0.10.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
