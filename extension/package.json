@@ -2,7 +2,7 @@
   "name": "compressor",
   "displayName": "comPREssOR",
   "description": "Cursor-only compressed Agent Chat memory via hooks and a vendored Python engine. Refuses non-Cursor hosts (fail-closed).",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "soltrinox",
   "license": "Apache-2.0",
   "repository": {

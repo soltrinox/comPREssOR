@@ -5,7 +5,7 @@ context to Cursor Agent Chat from locally maintained compressed session state.
 Local state is projected into a bounded pack ordered as `HOT_SET`, typed graph
 lines, and query-ranked chunks, then injected into Agent Chat.
 
-> **Status:** v0.1.3 — install via **VSIX sideload** today. Open VSX listing is
+> **Status:** v0.1.4 — install via **VSIX sideload** today. Open VSX listing is
 > pending (namespace / human publish). See
 > [docs/PREFLIGHT.md](docs/PREFLIGHT.md) and
 > [docs/PUBLISHING.md](docs/PUBLISHING.md).
@@ -37,7 +37,7 @@ search is not yet the install path for most users.
 
 1. Download a release VSIX from
    [GitHub Releases (latest)](https://github.com/soltrinox/comPREssOR/releases/latest)
-   (v0.1.3 asset: `compressor-0.1.3.vsix`), **or** build from this repo:
+   (v0.1.4 asset: `compressor-0.1.4.vsix`), **or** build from this repo:
 
 ```bash
 cd extension && npm ci && npm run package

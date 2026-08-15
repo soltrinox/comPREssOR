@@ -6,9 +6,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-14
+
 ### Changed
 
-- Install docs: VSIX sideload is the primary path while Open VSX listing is
+- Extension / engine package stamp aligned to **0.1.4** (`extension/package.json`,
+  `engine/pyproject.toml`, `hook_cli` fallback `build_stamp`).
+- README Elsewhere: restore public lab link [`RosarioCyber.com`](https://rosariocyber.com).
+- Scrub gate (`extension/build/scrub-check.mjs`): allowlist public hostnames
+  (`rosariocyber.com`, `eni6ma.com`) so lab URLs pass without a blanket username
+  exception.
+- Install docs: VSIX sideload remains the primary path while Open VSX listing is
   pending (`docs/PREFLIGHT.md`, README Install, `docs/COMPATIBILITY.md`,
   `docs/PUBLISHING.md`). No false “available on Open VSX now.”
 

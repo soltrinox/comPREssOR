@@ -13,6 +13,7 @@ Do not treat Extensions search / Open VSX as the default install path yet.
 Public GitHub Releases ship a ready-to-sideload asset:
 
 - Latest: https://github.com/soltrinox/comPREssOR/releases/latest
+- v0.1.4: https://github.com/soltrinox/comPREssOR/releases/tag/v0.1.4 — asset `compressor-0.1.4.vsix`
 - v0.1.3: https://github.com/soltrinox/comPREssOR/releases/tag/v0.1.3 — asset `compressor-0.1.3.vsix`
 
 ### Build a VSIX from this repo
