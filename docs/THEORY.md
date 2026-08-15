@@ -101,7 +101,7 @@ There was no `.tex` appendix and no equation blocks under `docs/`. That was a pr
 
 ---
 
-## 4. Token estimator $\tau$
+## 4. Token estimator ($\tau$)
 
 **Definition.** For text $x$ with character length $|x|$,
 
@@ -200,7 +200,7 @@ v(x)_j
 \sum_{n=1}^{3}
 \sum_{g\in\mathcal{N}_n(x)}
 \sigma(g)\,
-\mathbf{1}\!\left[h(g)\equiv j\pmod{d}\right],
+\mathbf{1}[h(g)\equiv j \bmod d],
 \qquad
 \hat{v}(x)=\frac{v(x)}{\|v(x)\|_2}
 $$
@@ -241,11 +241,10 @@ $$
 `rank_relevant_chunks` keeps scores $\ge\theta$; if none survive, it falls back to the top $k_{\mathrm{fb}}$ chunks:
 
 $$
-\theta=\texttt{MIN\_RANK\_SCORE}=0.03,\qquad
-k_{\mathrm{fb}}=\texttt{RANK\_FALLBACK\_TOP\_K}=3.
+\theta = 0.03,\qquad k_{\mathrm{fb}} = 3.
 $$
 
-Candidates come from `collect_candidates` (window text chunks, recent turns, typed projection, durable facts, open items). Empty query yields an empty ranked list.
+Constants: `MIN_RANK_SCORE` $=0.03$, `RANK_FALLBACK_TOP_K` $=3$. Candidates come from `collect_candidates` (window text chunks, recent turns, typed projection, durable facts, open items). Empty query yields an empty ranked list.
 
 **Claim.** Ranking is extractive and wording-preserving: selected chunks are verbatim spans, not paraphrases.
 
@@ -267,11 +266,11 @@ Candidates come from `collect_candidates` (window text chunks, recent turns, typ
 
 $$
 c'=\alpha\,c_i+(1-\alpha)\,c_{i+1},\qquad
-\alpha=\texttt{DEFAULT\_EMA}=0.7,\quad
+\alpha=0.7,\quad
 K_{\max}=32.
 $$
 
-Then L2-normalize rows (`append_then_pool` in `compress.py`).
+Constants: `DEFAULT_EMA` $=0.7$, `DEFAULT_K_MAX` $=32$. Then L2-normalize rows (`append_then_pool` in `compress.py`).
 
 **Claim.** This compresses *local numeric digests*, not the inject text $P_t$. Inject size is governed by $\Pi$ and $\tau$, not by $K_{\max}$ alone.
 
@@ -294,14 +293,17 @@ Then L2-normalize rows (`append_then_pool` in `compress.py`).
 **Definition.** Let $r_t\in[0,1]$ be a novelty rate supplied to `adaptive_budget`. With cap $B_{\max}$:
 
 $$
-B_t=
-\begin{cases}
-B_{\max}, & t\le T_w\\[4pt]
-\max\!\big(
+B_t = B_{\max}
+\quad\text{when } t \le T_w
+$$
+
+$$
+B_t =
+\max\!\Big(
 T_{\mathrm{floor}},\,
-\min(B_{\max},\ \lfloor B_{\max}\cdot\max(\rho_{\min},\,r_t)\rfloor)
-\big), & t>T_w
-\end{cases}
+\min\big(B_{\max},\ \lfloor B_{\max}\cdot\max(\rho_{\min},\,r_t)\rfloor\big)
+\Big)
+\quad\text{when } t > T_w
 $$
 
 | Const | Value | Code name |
@@ -329,17 +331,17 @@ $$
 **Definition.** Ordered candidate families $u_1\prec u_2\prec u_3$: HOT_SET block, typed lines, ranked chunks. The packer greedily concatenates while the prefix stays within budget under $\tau$:
 
 $$
-P_t=\mathrm{concat}\big(u\in\mathcal{U}_t:\ \tau(\text{prefix})\le B_t\big).
+P_t=\mathrm{concat}\big(u\in\mathcal{U}_t:\ \tau(\mathrm{prefix})\le B_t\big).
 $$
 
 Cross-turn / marginal dedup uses keyword Jaccard:
 
 $$
 J(A,B)=\frac{|A\cap B|}{|A\cup B|},\qquad
-\text{skip if }J>\mu,\ \mu=\texttt{MARGINAL\_JACCARD}=0.8.
+\text{skip if } J > \mu,\quad \mu = 0.8.
 $$
 
-Related constants: `DEDUP_K=3` (last-K line-hash suppression window when enabled), cross-turn dedup default on (`CHAT_COMPRESSOR_CROSS_TURN_DEDUP`). Optional skip method returns empty pack when allowed and packed size is below the skip floor without open-item / supersede changes.
+Related constants: `MARGINAL_JACCARD` $=0.8$, `DEDUP_K=3` (last-K line-hash suppression window when enabled), cross-turn dedup default on (`CHAT_COMPRESSOR_CROSS_TURN_DEDUP`). Optional skip method returns empty pack when allowed and packed size is below the skip floor without open-item / supersede changes.
 
 **Performance identity (inject corpus).** For replay texts $R_t$ and packs $P_t$,
 
@@ -348,7 +350,7 @@ $$
 \eta=1-\frac{\sum_t\tau(P_t)}{\sum_t\tau(R_t)}.
 $$
 
-**Locked numerals** ([PERFORMANCE.md](PERFORMANCE.md), 199-prompt corpus, unit $\tau=\texttt{chars/4}$):
+**Locked numerals** ([PERFORMANCE.md](PERFORMANCE.md), 199-prompt corpus, unit $\tau$ = `chars/4`):
 
 | Quantity | Exact |
 | --- | ---: |
@@ -378,7 +380,7 @@ s_{\mathrm{decision}}=0.40,\quad
 s_{\mathrm{path}}=0.20.
 $$
 
-Default HOT_SET assembly uses `max_chars=400`. Slot count is approximately $n_{\mathrm{slots}}=\max(5,\lfloor\max\_chars/64\rfloor)$, then per-bucket caps are $s\cdot n_{\mathrm{slots}}$ (at least 1). Ranking within buckets uses salience plus a Jaccard overlap term with the query when present:
+Default HOT_SET assembly uses `max_chars=400`. Slot count is approximately $n_{\mathrm{slots}}=\max(5,\lfloor M/64\rfloor)$ where $M$ is `max_chars`, then per-bucket caps are $s\cdot n_{\mathrm{slots}}$ (at least 1). Ranking within buckets uses salience plus a Jaccard overlap term with the query when present:
 
 $$
 \mathrm{rank}(n)=\mathrm{salience}(n)+0.5\cdot J(\mathrm{keywords}(n),\mathrm{keywords}(q)).
@@ -535,7 +537,7 @@ $$
 
 **Plain English.** Same prompts, two ways to stuff the inject channel: dump everything, or pack under 1024. Pack used about 16% of the dump’s estimated tokens. That is the whole “6×” story—and it stops at the inject channel.
 
-**Arithmetic check.** $139465/862201\approx 0.1617$ (display 16.2%). $1-0.1617\approx 0.8383$ (display 83.8% / 84%). $862201/139465\approx 6.182$. Dollar illustration on PERFORMANCE maps the same ratio to ~18¢ on a $1.00 replay inject dollar under $\tau$ unit conversion—not a measured price.
+**Arithmetic check.** $139465/862201\approx 0.1617$ (display 16.2%). $1-0.1617\approx 0.8383$ (display 83.8% / 84%). $862201/139465\approx 6.182$. Dollar illustration on PERFORMANCE maps the same ratio to ~18¢ on a **1.00** replay-inject dollar under $\tau$ unit conversion—not a measured price.
 
 **What the example does not compute.** It does not subtract native history, tool outputs Cursor already attached, or billed tokenizer counts. It does not attribute $\Delta$ to any single operator (HOT_SET vs typed vs ranked). Dedup yield is reported separately so readers do not double-count it into $\Delta$.
 
@@ -570,9 +572,9 @@ The equations predict several observable failure modes.
 ## 18. Honesty ledger / non-claims
 
 1. **No optimality theorem.** Priority packing + cosine + salience is a heuristic policy, not a proven $\arg\max U/\tau$.
-2. **$\tau\neq$ billing tokenizer.** PERFORMANCE inject cards use `chars/4`. A separate lab/live SDK probe reports billed totals for that probe only; do not merge probes.
+2. **$\tau$ is not a billing tokenizer.** PERFORMANCE inject cards use `chars/4`. A separate lab/live SDK probe reports billed totals for that probe only; do not merge probes.
 3. **Inject-path only.** 862201 / 139465 / ~83.8% / ~6× are scoped to packed inject vs full-corpus replay of ingested prompt text. Native chat history is outside $\Delta$.
-4. **Not a Cursor invoice.** Dollar illustrations (e.g. ~18¢ on the replay dollar) are unit conversions of $\tau$ ratios, not measured $/token prices.
+4. **Not a Cursor invoice.** Dollar illustrations (e.g. ~18¢ on the replay dollar) are unit conversions of $\tau$ ratios, not measured dollars-per-token prices.
 5. **Pattern-1 off by default.** Vocabulary decode is a debug path; it is not part of the 199-prompt inject measurement.
 6. **No hidden model channel.** Only text $P_t$ is injected; $C_t$ stays local.
 7. **No guarantee of better answers.** Bounded continuity is the mechanism; answer quality is out of scope for these equations.

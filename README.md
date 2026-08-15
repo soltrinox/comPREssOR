@@ -58,6 +58,24 @@ Formal model: [docs/THEORY.md](docs/THEORY.md).
   <a href="docs/PERFORMANCE.md">How this was measured</a>
 </p>
 
+### [Formal model](docs/THEORY.md)
+
+Pack under estimator $\tau$, dual state $S_t=(G_t,C_t)$:
+
+$$
+\tau(x)=\max\!\left(1,\ \left\lfloor\frac{|x|+3}{4}\right\rfloor\right)
+\quad(x\neq\varepsilon),\qquad
+P_t=\Pi(S_t,q_t;B_t),\quad \tau(P_t)\le B_t\le B_{\max}
+$$
+
+$$
+\Delta=\sum_t\tau(R_t)-\sum_t\tau(P_t),\qquad
+\eta=1-\frac{\sum_t\tau(P_t)}{\sum_t\tau(R_t)}
+\quad(\text{inject path; }862201\to139465\Rightarrow\eta\approx0.838)
+$$
+
+[Click for formal model →](docs/THEORY.md) · code-backed · not a billing claim
+
 ## Install
 
 **Primary path today: sideload a VSIX.** Open VSX listing is pending — Extensions
@@ -93,7 +111,7 @@ so “most compressed” is the wrong leaderboard.
 
 | Approach | What it puts in the prompt | Measured here? | Size / utility note |
 | --- | --- | --- | --- |
-| Paste / replay prior prompts into `additional_context` | Growing corpus every turn | Yes — inject corpus | $1.00 replay dollar; packed ≈ **18¢** (~**6×** as far) |
+| Paste / replay prior prompts into `additional_context` | Growing corpus every turn | Yes — inject corpus | **1.00** replay dollar; packed ≈ **18¢** (~**6×** as far) |
 | Last-N truncation | Tail of the thread only | No | Cheap; can drop early decisions |
 | One-shot summary | Prose digest | No | Can drop paths/open items |
 | Vocabulary / bag compression | Tiny word list | Yes — SDK probe | 27 tokens, **recall 0.00** — size wins, utility fails |
