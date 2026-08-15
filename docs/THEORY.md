@@ -106,9 +106,7 @@ There was no `.tex` appendix and no equation blocks under `docs/`. That was a pr
 **Definition.** For text $x$ with character length $|x|$,
 
 $$
-\tau(x)=\max\!\left(1,\ \left\lfloor\frac{|x|+3}{4}\right\rfloor\right)
-\quad\text{for }x\neq\varepsilon;\quad
-\tau(\varepsilon)=0.
+\tau(x)=\max\!\left(1,\ \left\lfloor\frac{|x|+3}{4}\right\rfloor\right)\quad\text{for }x\neq\varepsilon;\quad\tau(\varepsilon)=0.
 $$
 
 Code: `estimate_tokens` in `metrics.py` — integer division `(len(text)+3)//4` with floor 1 for nonempty text.
@@ -132,8 +130,7 @@ Code: `estimate_tokens` in `metrics.py` — integer division `(len(text)+3)//4` 
 **Definition.** Session history grows monotonically in content size:
 
 $$
-|H_t|\ \text{nondecreasing in }t,\qquad
-\tau(P_t)\le B_t\le B_{\max}.
+|H_t|\ \text{nondecreasing in }t,\qquad\tau(P_t)\le B_t\le B_{\max}.
 $$
 
 Defaults from code:
@@ -166,8 +163,7 @@ After packing, the hook may truncate the final string so $|P_t^{\mathrm{out}}|\l
 **Definition.**
 
 $$
-S_t=(G_t,\ C_t),\qquad
-P_t=\Pi(S_t,\ q_t;\ B_t).
+S_t=(G_t,\ C_t),\qquad P_t=\Pi(S_t,\ q_t;\ B_t).
 $$
 
 - $G_t$: typed nodes (Turn, Topic, Fact, OpenItem, Event) and edges; produces HOT_SET and typed lines.
@@ -195,13 +191,10 @@ $$
 **Definition.** Offline default embedding `hashed_ngram_embed` maps text $x$ to $\hat{v}(x)\in\mathbb{R}^d$ by feature-hashing 1–3 grams:
 
 $$
-v(x)_j
-=
-\sum_{n=1}^{3}
-\sum_{g\in\mathcal{N}_n(x)}
-\sigma(g)\,
-\mathbf{1}[h(g)\equiv j \bmod d],
-\qquad
+v(x)_j = \sum_{n=1}^{3} \sum_{g \in \mathcal{N}_n(x)} \sigma(g)\,\mathbf{1}[h(g)\equiv j \bmod d]
+$$
+
+$$
 \hat{v}(x)=\frac{v(x)}{\|v(x)\|_2}
 $$
 
@@ -233,15 +226,17 @@ Optional SentenceTransformer or HF gist producers may replace this map when env 
 **Definition.** For query $q$ and chunk $c$,
 
 $$
-\mathrm{score}(q,c)=\cos\!\big(\hat{v}(q),\hat{v}(c)\big)
-=
-\frac{\langle\hat{v}(q),\hat{v}(c)\rangle}{\|\hat{v}(q)\|_2\,\|\hat{v}(c)\|_2}.
+\mathrm{score}(q,c)=\cos\!\big(\hat{v}(q),\hat{v}(c)\big)=\frac{\langle\hat{v}(q),\hat{v}(c)\rangle}{\|\hat{v}(q)\|_2\,\|\hat{v}(c)\|_2}
 $$
 
 `rank_relevant_chunks` keeps scores $\ge\theta$; if none survive, it falls back to the top $k_{\mathrm{fb}}$ chunks:
 
 $$
-\theta = 0.03,\qquad k_{\mathrm{fb}} = 3.
+\theta = 0.03
+$$
+
+$$
+k_{\mathrm{fb}} = 3
 $$
 
 Constants: `MIN_RANK_SCORE` $=0.03$, `RANK_FALLBACK_TOP_K` $=3$. Candidates come from `collect_candidates` (window text chunks, recent turns, typed projection, durable facts, open items). Empty query yields an empty ranked list.
@@ -265,9 +260,7 @@ Constants: `MIN_RANK_SCORE` $=0.03$, `RANK_FALLBACK_TOP_K` $=3$. Candidates come
 **Definition.** Given prior matrix $C_{t-1}$ and new row block $X_t$, stack then repeatedly merge while $k>K_{\max}$. Merge the adjacent pair with highest cosine via EMA:
 
 $$
-c'=\alpha\,c_i+(1-\alpha)\,c_{i+1},\qquad
-\alpha=0.7,\quad
-K_{\max}=32.
+c'=\alpha\,c_i+(1-\alpha)\,c_{i+1},\qquad\alpha=0.7,\quad K_{\max}=32.
 $$
 
 Constants: `DEFAULT_EMA` $=0.7$, `DEFAULT_K_MAX` $=32$. Then L2-normalize rows (`append_then_pool` in `compress.py`).
@@ -293,17 +286,11 @@ Constants: `DEFAULT_EMA` $=0.7$, `DEFAULT_K_MAX` $=32$. Then L2-normalize rows (
 **Definition.** Let $r_t\in[0,1]$ be a novelty rate supplied to `adaptive_budget`. With cap $B_{\max}$:
 
 $$
-B_t = B_{\max}
-\quad\text{when } t \le T_w
+B_t = B_{\max}\quad\text{when } t \le T_w
 $$
 
 $$
-B_t =
-\max\!\Big(
-T_{\mathrm{floor}},\,
-\min\big(B_{\max},\ \lfloor B_{\max}\cdot\max(\rho_{\min},\,r_t)\rfloor\big)
-\Big)
-\quad\text{when } t > T_w
+B_t = \max\!\Big(T_{\mathrm{floor}},\,\min\big(B_{\max},\ \lfloor B_{\max}\cdot\max(\rho_{\min},\,r_t)\rfloor\big)\Big)\quad\text{when } t > T_w
 $$
 
 | Const | Value | Code name |
@@ -337,8 +324,7 @@ $$
 Cross-turn / marginal dedup uses keyword Jaccard:
 
 $$
-J(A,B)=\frac{|A\cap B|}{|A\cup B|},\qquad
-\text{skip if } J > \mu,\quad \mu = 0.8.
+J(A,B)=\frac{|A\cap B|}{|A\cup B|},\qquad\text{skip if } J > \mu,\quad \mu = 0.8.
 $$
 
 Related constants: `MARGINAL_JACCARD` $=0.8$, `DEDUP_K=3` (last-K line-hash suppression window when enabled), cross-turn dedup default on (`CHAT_COMPRESSOR_CROSS_TURN_DEDUP`). Optional skip method returns empty pack when allowed and packed size is below the skip floor without open-item / supersede changes.
@@ -346,8 +332,7 @@ Related constants: `MARGINAL_JACCARD` $=0.8$, `DEDUP_K=3` (last-K line-hash supp
 **Performance identity (inject corpus).** For replay texts $R_t$ and packs $P_t$,
 
 $$
-\Delta=\sum_t \tau(R_t)-\sum_t \tau(P_t),\qquad
-\eta=1-\frac{\sum_t\tau(P_t)}{\sum_t\tau(R_t)}.
+\Delta=\sum_t \tau(R_t)-\sum_t \tau(P_t),\qquad\eta=1-\frac{\sum_t\tau(P_t)}{\sum_t\tau(R_t)}.
 $$
 
 **Locked numerals** ([PERFORMANCE.md](PERFORMANCE.md), 199-prompt corpus, unit $\tau$ = `chars/4`):
@@ -375,9 +360,7 @@ Ratio illustration: $\sum\tau(R)/\sum\tau(P)\approx 6.18$ (~6×). Scope: memory-
 **Definition.** HOT_SET slot shares (`graph.py`):
 
 $$
-s_{\mathrm{open}}=0.40,\quad
-s_{\mathrm{decision}}=0.40,\quad
-s_{\mathrm{path}}=0.20.
+s_{\mathrm{open}}=0.40,\quad s_{\mathrm{decision}}=0.40,\quad s_{\mathrm{path}}=0.20.
 $$
 
 Default HOT_SET assembly uses `max_chars=400`. Slot count is approximately $n_{\mathrm{slots}}=\max(5,\lfloor M/64\rfloor)$ where $M$ is `max_chars`, then per-bucket caps are $s\cdot n_{\mathrm{slots}}$ (at least 1). Ranking within buckets uses salience plus a Jaccard overlap term with the query when present:
@@ -416,8 +399,7 @@ Salience is a heuristic weight from regex/boost rules in `graph.py` (decision cu
 **Definition (informal, documentation only).** WHY’s objective sketch:
 
 $$
-\max_{P:\ \tau(P)\le B}\ \frac{U(P;q)}{\tau(P)}
-\quad\text{s.t. recall of active entities}.
+\max_{P:\ \tau(P)\le B}\ \frac{U(P;q)}{\tau(P)}\quad\text{s.t. recall of active entities}.
 $$
 
 **Claim.** Ship code does **not** optimize $U$. It uses fixed priority order, cosine ranking, Jaccard dedup, and salience heuristics as a surrogate policy $\Pi$.
@@ -509,22 +491,19 @@ $$
 **Replay vs pack sums.**
 
 $$
-\sum_t\tau(R_t)=862201,\qquad
-\sum_t\tau(P_t)=139465.
+\sum_t\tau(R_t)=862201,\qquad\sum_t\tau(P_t)=139465.
 $$
 
 **Delta and efficiency.**
 
 $$
-\Delta=862201-139465=722736,\qquad
-\eta=1-\frac{139465}{862201}\approx 0.838.
+\Delta=862201-139465=722736,\qquad\eta=1-\frac{139465}{862201}\approx 0.838.
 $$
 
 **Multiple.**
 
 $$
-\frac{\sum\tau(R)}{\sum\tau(P)}=\frac{862201}{139465}\approx 6.18
-\quad(\text{display ~6×}).
+\frac{\sum\tau(R)}{\sum\tau(P)}=\frac{862201}{139465}\approx 6.18\quad(\text{display ~6×}).
 $$
 
 **Median.** Median packed inject on the corpus is 783 estimated tokens (≤ 1024).
