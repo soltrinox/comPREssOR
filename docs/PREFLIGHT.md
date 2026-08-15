@@ -89,6 +89,24 @@ Extension-host verification: run **comPREssOR: Compatibility Report** after inst
 - Namespace: `soltrinox` (human action: Eclipse Open VSX Publisher Agreement +
   `ovsx create-namespace soltrinox`).
 
+## CI push / validate loop
+
+To push `main` and wait for GitHub Actions with a bounded retry (max 5), use the
+pattern-discoverable script:
+
+```bash
+./scripts/verify-ci-push-loop.sh
+# help / dry-run (no push):
+./scripts/verify-ci-push-loop.sh --help
+./scripts/verify-ci-push-loop.sh --dry-run --skip-local-build
+```
+
+It mirrors critical steps from `.github/workflows/ci.yml` locally, pushes without
+`--force`, watches the `CI` workflow for that SHA, and captures failed logs under
+`test-results/ci-loop/`. It only auto-applies a small table of known fixes when
+you pass `--auto-commit-fixes`; otherwise it fail-closes with logs for an agent
+or human (`--agent-hint` prints a ready prompt).
+
 ## License decision
 
 - **Apache-2.0** for the public repo and VSIX.

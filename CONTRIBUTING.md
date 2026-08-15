@@ -86,6 +86,23 @@ Hooks stay fail-open. If the engine, the interpreter, or the state directory is
 unavailable, the shim exits successfully and the user's turn proceeds without
 injected context.
 
+
+## CI push loop
+
+After committing on `main`, you can validate the remote build with a bounded
+loop (local CI-mirror → `git push origin HEAD` → `gh run watch`, max 5
+iterations, logs in `test-results/ci-loop/`):
+
+```bash
+./scripts/verify-ci-push-loop.sh --help
+./scripts/verify-ci-push-loop.sh
+```
+
+The script does **not** invent arbitrary CI fixes. Optional `--auto-commit-fixes`
+only applies documented known patterns (for example leftover `vsce --packagePath`
+on `@vscode/vsce` 3.x). Unknown failures exit non-zero with a log path; use
+`--agent-hint` for a paste-ready Cursor prompt, fix, then re-run.
+
 ## Pull requests
 
 - One concern per pull request.
