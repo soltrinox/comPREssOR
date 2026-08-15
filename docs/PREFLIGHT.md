@@ -2,6 +2,45 @@
 
 Captured on the build machine against **Cursor 2.app** (product version `3.2.16`, quality `stable`).
 
+## Current install path (primary)
+
+**Open VSX listing is pending.** Until the `soltrinox` namespace is claimed and the
+extension is published, most users install by **sideloading a VSIX** into Cursor.
+Do not treat Extensions search / Open VSX as the default install path yet.
+
+### Build a VSIX from this repo
+
+There is no public GitHub Release asset yet. Package from source:
+
+```bash
+cd extension && npm ci && npm run package
+```
+
+That runs `vsce package` (via the `package` script) and writes a
+`soltrinox.compressor-*.vsix` under `extension/`.
+
+### Install in Cursor
+
+1. Open **Extensions**.
+2. Open the view menu (**⋯**) → **Install from VSIX…**  
+   Or Command Palette: **Extensions: Install from VSIX**.
+3. Choose the `.vsix` produced above.
+4. Reload when Cursor prompts.
+
+### First activation
+
+On an allowlisted Cursor desktop host:
+
+- Python **3.11+** must be discoverable (or set `chatCompressor.pythonPath`).
+- The extension provisions a private venv, writes the env file, installs the
+  hook shim, merges hook entries, and deploys its user rule and skill.
+- Non-Cursor hosts may accept the VSIX, but the host gate refuses side effects
+  and writes nothing under the Cursor data directory.
+
+Deeper detail: [SYSTEM.md](SYSTEM.md) (lifecycle, settings, hooks) and
+[COMPATIBILITY.md](COMPATIBILITY.md) (host gate, sideload boundary). Publishing
+when Open VSX is ready: [PUBLISHING.md](PUBLISHING.md).
+
 ## Bundled VS Code API
 
 | Signal | Value | Source |
@@ -31,11 +70,17 @@ Additional product facts (informational):
 
 Extension-host verification: run **comPREssOR: Compatibility Report** after install; the output channel logs the live `uriScheme`, `appName`, `appHost`, and `remoteName`.
 
-## Extension gallery / Open VSX
+## Extension gallery / Open VSX (pending)
 
-- Cursor's extension panel resolves packages from **Open VSX** (Open VSX is the gallery source for third-party Cursor extensions; there is no separate Microsoft Marketplace submission for this Cursor-only extension).
-- Publish path: **Open VSX only** (`ovsx publish`). Microsoft Marketplace publish is blocked by `assert-cursor-target.mjs` (REQ-HOST-05).
-- Namespace: `soltrinox` (human action: Eclipse Open VSX Publisher Agreement + `ovsx create-namespace soltrinox`).
+- Cursor's extension panel resolves third-party packages from **Open VSX**. There
+  is no Microsoft Marketplace submission for this Cursor-only extension.
+- **Status:** listing and namespace claim are **not yet** the install path for most
+  users. Sideload a VSIX (above) until publish completes.
+- Intended publish path (when ready): **Open VSX only** (`ovsx publish`).
+  Microsoft Marketplace publish is blocked by `assert-cursor-target.mjs`
+  (REQ-HOST-05).
+- Namespace: `soltrinox` (human action: Eclipse Open VSX Publisher Agreement +
+  `ovsx create-namespace soltrinox`).
 
 ## License decision
 
@@ -44,7 +89,7 @@ Extension-host verification: run **comPREssOR: Compatibility Report** after inst
 
 ## Open VSX namespace claim (human latency)
 
-Status: **pending human**. Start before Phase 9:
+Status: **pending human**. Required before gallery install works:
 
 1. Sign the Eclipse Foundation Open VSX Publisher Agreement at https://open-vsx.org/
 2. Authenticate and run `ovsx create-namespace soltrinox`

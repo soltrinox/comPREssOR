@@ -6,6 +6,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Install docs: VSIX sideload is the primary path while Open VSX listing is
+  pending (`docs/PREFLIGHT.md`, README Install, `docs/COMPATIBILITY.md`,
+  `docs/PUBLISHING.md`). No false “available on Open VSX now.”
+
 ### Added
 
 - README comparison table vs other prompt continuity approaches (claims-gated:

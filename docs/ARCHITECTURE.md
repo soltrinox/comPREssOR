@@ -17,9 +17,12 @@ docs.
 
 - [HOOK_CONTRACT.md](HOOK_CONTRACT.md): Cursor hook events, fail-open defaults,
   env keys, and merge policy.
+- [PREFLIGHT.md](PREFLIGHT.md): host facts, current VSIX sideload install path,
+  and Open VSX pending status.
 - [COMPATIBILITY.md](COMPATIBILITY.md): Cursor-only host gate, unsupported-host
   behavior, sideload boundary, and Open VSX policy.
-- [PUBLISHING.md](PUBLISHING.md): human publishing checklist for Open VSX.
+- [PUBLISHING.md](PUBLISHING.md): human publishing checklist for Open VSX
+  (gallery not yet the default install path).
 
 ## Repo Shape
 

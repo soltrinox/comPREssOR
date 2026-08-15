@@ -2,9 +2,13 @@
 
 Identity: GitHub `soltrinox/comPREssOR`, Open VSX namespace/publisher `soltrinox`, extension id `soltrinox.compressor`.
 
+**Until Open VSX publish completes,** end users install by sideloading a VSIX
+built from this repo — not via Extensions gallery search. Step-by-step:
+[PREFLIGHT.md](PREFLIGHT.md) and the README Install section.
+
 ## Human blockers (Phase 9)
 
-Complete these before the first public release:
+Complete these before the first **gallery** release (Open VSX listing):
 
 1. **Create GitHub repo** `soltrinox/comPREssOR` (if missing) and grant push credentials.
 2. **Claim Open VSX namespace** `soltrinox`:
@@ -28,9 +32,13 @@ git push origin v0.1.0
 
 ## Verify after publish
 
+Only after `ovsx publish` succeeds (listing is not available before that):
+
 1. Open VSX listing: `https://open-vsx.org/extension/soltrinox/compressor`
 2. In Cursor → Extensions, search **comPREssOR** / `soltrinox.compressor`
 3. Fresh install: Compatibility Report ALLOW, hooks merge (V-01 / V-08 / V-10)
+
+Until then, verify via VSIX sideload per [PREFLIGHT.md](PREFLIGHT.md).
 
 ## Hard rules
 

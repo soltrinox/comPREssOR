@@ -24,6 +24,11 @@ Any other host (VS Code stable/Insiders, VSCodium, Remote-SSH, web, etc.). On de
 
 Nothing in the VSIX format prevents installation into VS Code. Activation refuses side effects. Stated in the README and gallery description.
 
-## Marketplace
+## Marketplace / install
 
-Publish target is **Open VSX only**. Microsoft Marketplace publish is blocked at build time.
+**Install today:** sideload a VSIX (build with `cd extension && npm run package`,
+then Cursor **Extensions: Install from VSIX**). See [PREFLIGHT.md](PREFLIGHT.md).
+
+**Publish target (when ready):** **Open VSX only**. Microsoft Marketplace publish
+is blocked at build time. The Open VSX listing is **pending** (namespace claim /
+human publish); do not treat gallery search as the current default install path.

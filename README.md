@@ -5,7 +5,9 @@ context to Cursor Agent Chat from locally maintained compressed session state.
 Local state is projected into a bounded pack ordered as `HOT_SET`, typed graph
 lines, and query-ranked chunks, then injected into Agent Chat.
 
-> **Status:** v0.1.0 ready for human Open VSX publish. See
+> **Status:** v0.1.3 — install via **VSIX sideload** today. Open VSX listing is
+> pending (namespace / human publish). See
+> [docs/PREFLIGHT.md](docs/PREFLIGHT.md) and
 > [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 <p align="center">
@@ -30,18 +32,25 @@ lines, and query-ranked chunks, then injected into Agent Chat.
 
 ## Install
 
-1. In Cursor, install **comPREssOR** (`soltrinox.compressor`) from Open VSX or a
-   release VSIX.
-2. Reload Cursor. On first allowed activation, comPREssOR provisions its runtime,
-   writes the env file, installs the hook shim, merges hook entries, and deploys
-   its user rule and skill.
+**Primary path today: sideload a VSIX.** Open VSX listing is pending — Extensions
+search is not yet the install path for most users.
 
-Development sideload:
+1. Build the package from this repo (no public GitHub Release asset yet):
 
 ```bash
 cd extension && npm ci && npm run package
-# Install the produced VSIX in Cursor.
 ```
+
+2. In Cursor: **Extensions** → **⋯** → **Install from VSIX…**  
+   (or Command Palette: **Extensions: Install from VSIX**). Choose the
+   `soltrinox.compressor-*.vsix` under `extension/`.
+3. Reload when prompted. On first allowed activation (Cursor desktop only),
+   comPREssOR provisions Python 3.11+, writes the env file, installs the hook
+   shim, merges hook entries, and deploys its user rule and skill.
+
+Host gate, first-run lifecycle, and settings:
+[docs/PREFLIGHT.md](docs/PREFLIGHT.md), [docs/SYSTEM.md](docs/SYSTEM.md),
+[docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## vs other prompt continuity approaches
 
@@ -151,7 +160,10 @@ inject-path figure. Details: [docs/WHY.md](docs/WHY.md).
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): documentation index.
 - [docs/HOOK_CONTRACT.md](docs/HOOK_CONTRACT.md): hook events and fail-open
   defaults.
-- [docs/PUBLISHING.md](docs/PUBLISHING.md): Open VSX publishing checklist.
+- [docs/PREFLIGHT.md](docs/PREFLIGHT.md): host facts and current VSIX sideload
+  install path (Open VSX pending).
+- [docs/PUBLISHING.md](docs/PUBLISHING.md): Open VSX publishing checklist
+  (gallery install after human publish).
 
 ## Licence
 
