@@ -101,7 +101,7 @@ def build_stamp() -> str:
 
         return version("chat-compressor")
     except Exception:  # noqa: BLE001
-        return "0.1.4"
+        return "0.2.0"
 
 
 def _roi_fields(handle: PersistentAgentHandle, sampled: Any | None) -> str:

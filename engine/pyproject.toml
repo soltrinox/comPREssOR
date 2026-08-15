@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chat-compressor"
-version = "0.1.4"
+version = "0.2.0"
 description = "Latent State Persistence Engine and Cursor SDK A/B harness for compressed chat gists."
 readme = "README.md"
 requires-python = ">=3.11"

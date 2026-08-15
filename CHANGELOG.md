@@ -6,11 +6,32 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-14
+
+Public release consolidating the 0.1.x lineage into a sideload-first install path.
+
+### Added
+
+- README hero metrics and comparison table for the 199-prompt inject corpus
+  (scoped inject-path `chars/4` claims; not a Cursor billing export).
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) and manuscript savings cards under
+  [docs/assets/](docs/assets/).
+- `scripts/verify-ci-push-loop.sh` — bounded local-build → push → GitHub CI watch
+  loop for release readiness.
+
 ### Changed
 
-- `release.yml`: missing `OVSX_TOKEN` skips Open VSX publish with `[SKIP]` and
-  exit 0 (GitHub Release VSIX sideload remains primary; CI stays green). Docs
-  aligned in `docs/PUBLISHING.md`, `docs/PREFLIGHT.md`, and README.
+- Extension / engine package stamp aligned to **0.2.0** (`extension/package.json`,
+  `engine/pyproject.toml`, `hook_cli` fallback `build_stamp`).
+- Fork-merged engine lineage (0.1.3+): scrub-safe `HOME_RE`, query-aware ranking,
+  design/outcome extractors alongside M3–M6, `chunks.py` pool=`merged_body`.
+- Primary install path: **GitHub Release VSIX sideload** while Open VSX listing
+  is pending (`docs/PREFLIGHT.md`, README Install, `docs/PUBLISHING.md`).
+- `release.yml`: missing `OVSX_TOKEN` soft-skips Open VSX publish with `[SKIP]`
+  and exit 0 (CI stays green; sideload remains primary).
+- Scrub gate allowlists public hostnames (`rosariocyber.com`, `eni6ma.com`) so
+  lab URLs pass without a blanket username exception.
+- README Elsewhere: public lab link [`RosarioCyber.com`](https://rosariocyber.com).
 
 ## [0.1.4] - 2026-08-14
 
