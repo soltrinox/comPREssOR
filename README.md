@@ -1,9 +1,36 @@
 # comPREssOR
 
-`soltrinox.compressor` is a Cursor-only extension that supplies bounded forward
-context to Cursor Agent Chat from locally maintained compressed session state.
-Local state is projected into a bounded pack ordered as `HOT_SET`, typed graph
-lines, and query-ranked chunks, then injected into Agent Chat.
+## What this is
+
+`comPREssOR` (extension id `soltrinox.compressor`) is a **Cursor-only extension**
+that injects bounded compressed session memory into **Agent Chat**, so long
+sessions can keep continuity without replaying huge transcripts every turn.
+
+| Term | Meaning here |
+| --- | --- |
+| **Cursor** | A desktop IDE (VS Code–compatible) used for AI-assisted development — people building with AI agents in-editor, not a separate chat website. |
+| **Extension** | A plugin you install into that IDE. It adds features (hooks, settings, lifecycle) inside Cursor; it does not replace the editor. |
+| **comPREssOR** | The plugin that packs local compressed session state and forwards a budgeted gist into Agent Chat. |
+
+**Mechanism → outcome → scope**
+
+1. **Mechanism:** watches Agent Chat hook events, stores compressed state on disk
+   (default `$HOME/.cursor/context-graphs/`), and projects a pack ordered as
+   `HOT_SET` → typed graph lines → query-ranked chunks, capped per turn
+   (default ≤1,024 estimated tokens).
+2. **Observable outcome:** later turns receive continuity for paths, open items,
+   decisions, and selected spans from that bounded pack — without stuffing the
+   full transcript into the inject channel.
+3. **Token spend (scoped):** this is continuity / insurance against wasteful
+   replay on the memory-inject path. On a 199-prompt corpus, packed inject
+   forwarded about **one sixth** the estimated tokens of full-corpus replay
+   (**84% fewer**, `chars/4`) — not a Cursor billing export. Net spend drops
+   only if the gist replaces a paste or post-compact replay; Cursor still sends
+   native chat history. Hooks are fail-open.
+
+How to install today: [docs/PREFLIGHT.md](docs/PREFLIGHT.md).  
+Why bounded packs beat raw replay: [docs/WHY.md](docs/WHY.md).  
+Measured figures and honesty bounds: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 > **Status:** v0.2.0 — install via **VSIX sideload** today. Open VSX listing is
 > pending (namespace / human publish). See
