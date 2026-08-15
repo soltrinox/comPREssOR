@@ -58,26 +58,6 @@ Formal model: [docs/THEORY.md](docs/THEORY.md).
   <a href="docs/PERFORMANCE.md">How this was measured</a>
 </p>
 
-<a href="docs/THEORY.md" title="Open formal model">
-<blockquote>
-<p><strong>Formal model</strong> — pack under estimator $\tau$, dual state $S_t=(G_t,C_t)$:</p>
-
-$$
-\tau(x)=\max\!\left(1,\ \left\lfloor\frac{|x|+3}{4}\right\rfloor\right)
-\quad(x\neq\varepsilon),\qquad
-P_t=\Pi(S_t,q_t;B_t),\quad \tau(P_t)\le B_t\le B_{\max}
-$$
-
-$$
-\Delta=\sum_t\tau(R_t)-\sum_t\tau(P_t),\qquad
-\eta=1-\frac{\sum_t\tau(P_t)}{\sum_t\tau(R_t)}
-\quad(\text{inject path; }862201\to139465\Rightarrow\eta\approx0.838)
-$$
-
-<p><strong>Read the equations →</strong> <sub>docs/THEORY.md · code-backed · not a billing claim</sub></p>
-</blockquote>
-</a>
-
 ## Install
 
 **Primary path today: sideload a VSIX.** Open VSX listing is pending — Extensions
