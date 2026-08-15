@@ -1,6 +1,6 @@
 # How this was measured
 
-On a 199-prompt corpus, packed inject forwarded about **one sixth** the estimated tokens of full-corpus replay (**84% fewer**). That is the memory-inject path (`chars/4`), not a Cursor billing export.
+On a 199-prompt corpus, packed inject forwarded about **one sixth** the estimated tokens of full-corpus replay (**84% fewer**). That is the memory-inject path (`chars/4`), not a Cursor billing export. Formal identities for $\tau$, $\Delta$, and $\eta$ (and the ~6× ratio) are in [THEORY.md](THEORY.md).
 
 This page walks the five manuscript cards in order. Display numerals are rounded; exact arithmetic is given in each section. A second, separate lab/live SDK probe (184 / 19,938 estimated forward tokens; about 34% fewer billed tokens than raw replay on that probe) is tabulated at the end and documented in [WHY.md](WHY.md). Do not merge the two probes.
 
@@ -98,7 +98,7 @@ Keep these measurements separate. The inject corpus is a 199-prompt `chars/4` co
 | 199-prompt inject corpus (14–15 Aug 2026) | Packed inject vs full-corpus replay of ingested prompt text | Replay 862,201 → packed 139,465 → delta 722,736 → 83.8% (display 84% / 139k / 862k / 723,000). Cap 1,024, median 783. Dedup 65,944 / 46% on 147 turns. Unit `chars/4`. Builds 0.1.1 / 0.1.2 | No. Memory-inject path, not a Cursor billing export |
 | Lab/live SDK probe | Raw replay vs legacy vocabulary bag vs comPREssOR pack on one fixture; live billed totals include the SDK envelope | Final-turn estimated forward tokens: raw 19938, bag 27, pack 184. `entity_recall` 1.00 / 0.00 / 0.33. Live billed totals 31971 / 22352 / 21050. About 34% fewer billed tokens than raw replay **on that probe** | Yes, for that probe only. Billed input is not gist-only payload size |
 
-Theory, SDK table, and honesty ledger: [WHY.md](WHY.md). System constraint: do not invent stronger performance claims than the measured probes ([SYSTEM.md](SYSTEM.md)).
+Theory, SDK table, and honesty ledger: [WHY.md](WHY.md). Token estimator $\tau$, pack identities $\Delta$ / $\eta$, and the ~6× ratio as $\sum\tau(R)/\sum\tau(P)$: [THEORY.md](THEORY.md). System constraint: do not invent stronger performance claims than the measured probes ([SYSTEM.md](SYSTEM.md)).
 
 **Alternatives (mechanism only unless measured):** The inject corpus scores pack vs replay stuffing only. The SDK probe adds the vocabulary-bag cautionary arm (size vs recall). last-N truncation, summary-only digests, and codebase RAG are **not** scored here; see the README comparison table and the [WHY.md](WHY.md) honesty ledger.
 

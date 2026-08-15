@@ -9,12 +9,16 @@ docs.
   sequence, locked numerals, honesty lines, and the two-probe table.
 - [WHY.md](WHY.md): explains why bounded forward context can be preferable to
   raw transcript replay, the lab/live SDK probe, and where the evidence stops.
+- [THEORY.md](THEORY.md): formal model of $\tau$, dual state, ranking, pack
+  assembly, registries, and honesty ledger (equation form of the engine).
 - [SYSTEM.md](SYSTEM.md): explains the implemented system: host gate, runtime
   provisioning, env file projection, shim install, hook merge, local state,
   settings, utilization patterns, debugging, and non-goals.
 
 ## Reference Docs
 
+- [THEORY.md](THEORY.md): operator table, constant registry, worked inject-path
+  identities, and predicted failure modes.
 - [HOOK_CONTRACT.md](HOOK_CONTRACT.md): Cursor hook events, fail-open defaults,
   env keys, and merge policy.
 - [PREFLIGHT.md](PREFLIGHT.md): host facts, current VSIX sideload install path,

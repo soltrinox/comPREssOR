@@ -30,7 +30,8 @@ sessions can keep continuity without replaying huge transcripts every turn.
 
 How to install today: [docs/PREFLIGHT.md](docs/PREFLIGHT.md).  
 Why bounded packs beat raw replay: [docs/WHY.md](docs/WHY.md).  
-Measured figures and honesty bounds: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+Measured figures and honesty bounds: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).  
+Formal model: [docs/THEORY.md](docs/THEORY.md).
 
 > **Status:** v0.2.0 — install via **VSIX sideload** today. Open VSX listing is
 > pending (namespace / human publish). See
@@ -184,6 +185,8 @@ inject-path figure. Details: [docs/WHY.md](docs/WHY.md).
   sequence, locked numerals, and the two-probe table.
 - [docs/WHY.md](docs/WHY.md): why bounded forward context can beat raw replay,
   plus the lab/live SDK probe.
+- [docs/THEORY.md](docs/THEORY.md): formal model — equations, operator/constant
+  registries, and honesty ledger for the packer and dual state.
 - [docs/SYSTEM.md](docs/SYSTEM.md): architecture, lifecycle, settings, and use
   patterns.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): documentation index.

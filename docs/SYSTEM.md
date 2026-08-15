@@ -15,7 +15,7 @@ The implementation has two major parts:
 
 The system is intentionally fail-open after activation. If a hook side process fails, the current Agent Chat turn proceeds without injected context. The extension should improve continuity when healthy, but it should not block ordinary prompting when unavailable.
 
-Theory and measurement live in [WHY.md](WHY.md). Hook JSON defaults live in [HOOK_CONTRACT.md](HOOK_CONTRACT.md). This document is the architecture and utilization guide: how activation works, what each hook does, where state lives, how the pack is built, and how to steer the system with ordinary prompt craft.
+Theory lives in [WHY.md](WHY.md) (utility framing) and [THEORY.md](THEORY.md) (formal equations and registries). Measurement lives in [PERFORMANCE.md](PERFORMANCE.md). Hook JSON defaults live in [HOOK_CONTRACT.md](HOOK_CONTRACT.md). This document is the architecture and utilization guide: how activation works, what each hook does, where state lives, how the pack is built, and how to steer the system with ordinary prompt craft.
 
 ## Problem statement for prompt engineers
 

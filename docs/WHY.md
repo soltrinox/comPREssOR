@@ -226,7 +226,7 @@ This is also why the measured pack should not be oversold. A recall proxy of 0.3
 
 ## Interpreting "utility per token"
 
-The theory behind comPREssOR can be stated without heavy math. A prompt has utility when it supplies information that helps the model do the task. A prompt has token cost because every forwarded token competes with budget, latency, and sometimes billing. Utility per token asks whether the prompt is spending its tokens on useful material.
+The theory behind comPREssOR can be stated without heavy math. A prompt has utility when it supplies information that helps the model do the task. A prompt has token cost because every forwarded token competes with budget, latency, and sometimes billing. Utility per token asks whether the prompt is spending its tokens on useful material. For the equation form of $\tau$, packer $\Pi$, dual state, constant registries, and the informal $\max U/\tau$ sketch (with explicit non-claims), see [THEORY.md](THEORY.md).
 
 Raw replay often has high total utility because it contains everything. But as the session grows, its utility per token can decline. Many tokens are old, repeated, or irrelevant to the current turn. A bounded pack can have lower total utility and still higher utility per token if it keeps the active material and removes enough noise.
 
