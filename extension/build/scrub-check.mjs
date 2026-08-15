@@ -20,7 +20,7 @@ const keyNeedle = "CURSOR_" + "API_KEY=";
 // Personal machine username must not appear in published sources.
 const usernameNeedle = "rosa" + "rio";
 
-/** Public lab / product hosts that may contain the username as a domain prefix. */
+/** Public lab / product hostnames (URL or bare host); username substring elsewhere still fails. */
 const ALLOWED_PUBLIC_HOSTS = [
   "rosariocyber.com",
   "www.rosariocyber.com",
