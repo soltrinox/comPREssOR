@@ -181,7 +181,7 @@ roles  :: developer · architect · mathematician
 ```
 
 - [`ENI6MA.com`](https://eni6ma.com) — authentication product surface. Mechanism: mint a **one-shot proof** bound to a single request (apps, agents, paper). Outcome: the verifier observes allow/deny for that action; a spent proof does not replay as standing authority. Scope: Public / Cloud / Sovereign stacks under the published reference architecture and claim model — not a reusable password/token vault.
-- Rosario Cybernetics research lab — cybersecurity, cryptography, and AI-safety research that feeds ENI6MA (password-free auth demos, audit-trail posture, seminar/colloquium material). Partnership and licensing contact paths sit with the lab and the product surface above.
+- [`RosarioCyber.com`](https://rosariocyber.com) — Rosario Cybernetics research lab. Focus: cybersecurity, cryptography, and AI-safety research that feeds ENI6MA (password-free auth demos, audit-trail posture, seminar/colloquium material). Contact path for partnerships/licensing sits with the lab.
 
 ```
 © 2026 Rosario. All rights reserved.
