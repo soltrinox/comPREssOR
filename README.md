@@ -35,7 +35,9 @@ lines, and query-ranked chunks, then injected into Agent Chat.
 **Primary path today: sideload a VSIX.** Open VSX listing is pending — Extensions
 search is not yet the install path for most users.
 
-1. Build the package from this repo (no public GitHub Release asset yet):
+1. Download a release VSIX from
+   [GitHub Releases (latest)](https://github.com/soltrinox/comPREssOR/releases/latest)
+   (v0.1.3 asset: `compressor-0.1.3.vsix`), **or** build from this repo:
 
 ```bash
 cd extension && npm ci && npm run package
@@ -43,7 +45,7 @@ cd extension && npm ci && npm run package
 
 2. In Cursor: **Extensions** → **⋯** → **Install from VSIX…**  
    (or Command Palette: **Extensions: Install from VSIX**). Choose the
-   `soltrinox.compressor-*.vsix` under `extension/`.
+   downloaded release asset or `compressor-*.vsix` under `extension/`.
 3. Reload when prompted. On first allowed activation (Cursor desktop only),
    comPREssOR provisions Python 3.11+, writes the env file, installs the hook
    shim, merges hook entries, and deploys its user rule and skill.

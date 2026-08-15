@@ -8,23 +8,30 @@ Captured on the build machine against **Cursor 2.app** (product version `3.2.16`
 extension is published, most users install by **sideloading a VSIX** into Cursor.
 Do not treat Extensions search / Open VSX as the default install path yet.
 
+### Download a release VSIX (recommended)
+
+Public GitHub Releases ship a ready-to-sideload asset:
+
+- Latest: https://github.com/soltrinox/comPREssOR/releases/latest
+- v0.1.3: https://github.com/soltrinox/comPREssOR/releases/tag/v0.1.3 — asset `compressor-0.1.3.vsix`
+
 ### Build a VSIX from this repo
 
-There is no public GitHub Release asset yet. Package from source:
+Alternatively, package from source:
 
 ```bash
 cd extension && npm ci && npm run package
 ```
 
-That runs `vsce package` (via the `package` script) and writes a
-`soltrinox.compressor-*.vsix` under `extension/`.
+That runs `vsce package` (via the `package` script) and writes
+`compressor-*.vsix` under `extension/`.
 
 ### Install in Cursor
 
 1. Open **Extensions**.
 2. Open the view menu (**⋯**) → **Install from VSIX…**  
    Or Command Palette: **Extensions: Install from VSIX**.
-3. Choose the `.vsix` produced above.
+3. Choose the downloaded or locally built `.vsix`.
 4. Reload when Cursor prompts.
 
 ### First activation
