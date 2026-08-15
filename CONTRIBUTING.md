@@ -48,8 +48,12 @@ cd extension
 npm install
 npm run compile
 npm test
-npx vsce package
+npm run package
 ```
+
+`npm run package` runs `vsce package --no-dependencies` and writes
+`compressor-<version>.vsix` under `extension/` (output path via `-o`/`--out` if
+needed; `@vscode/vsce` 3.x has no `--packagePath`).
 
 ## Host policy
 
