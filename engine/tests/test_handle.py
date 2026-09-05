@@ -55,3 +55,51 @@ def test_deferred_graph_flush(tmp_path, monkeypatch) -> None:
     assert out5.graph_flushed is True
     forced = handle.step("force", flush_graph=True)
     assert forced.graph_flushed is True
+
+def test_step_persists_recipient_meta_through_lineage(tmp_path) -> None:
+    """CC-1/M0: step kwargs land on StateNode.meta and survive lineage reload."""
+    store = StateStore(tmp_path / "state")
+    handle = PersistentAgentHandle(
+        agent_id="meta-h",
+        store=store,
+        producer=EmbeddingProducer(d=64, k_max=8),
+        k_max=8,
+    )
+    handle.step(
+        "turn one with enough content for an embedding row here.",
+        recipient_id="cursor-grok-4.6-high-fast",
+        recipient_version="cn_4a91f0",
+        route_decision_id="urn:mg:routedecision:a1b2c3",
+    )
+    # Absent fields ⇒ prior meta shape (tool_status + tokenizer_id only).
+    handle.step("turn two continues the conversation with substance.")
+    handle.step(
+        "turn three hops to another served model with substance.",
+        recipient_id="other-model",
+        recipient_version="v2",
+        route_decision_id="urn:mg:routedecision:zzzz",
+    )
+
+    chain = store.lineage("meta-h")
+    assert len(chain) == 3
+    assert chain[0].meta["recipient_id"] == "cursor-grok-4.6-high-fast"
+    assert chain[0].meta["recipient_version"] == "cn_4a91f0"
+    assert chain[0].meta["route_decision_id"] == "urn:mg:routedecision:a1b2c3"
+    assert chain[0].meta["tool_status"] == "stub"
+    assert chain[0].meta["tokenizer_id"] == "hashed-ngram"
+
+    assert "recipient_id" not in chain[1].meta
+    assert "recipient_version" not in chain[1].meta
+    assert "route_decision_id" not in chain[1].meta
+    assert chain[1].meta == {"tool_status": "stub", "tokenizer_id": "hashed-ngram"}
+
+    assert chain[2].meta["recipient_id"] == "other-model"
+    assert chain[2].meta["recipient_version"] == "v2"
+    assert chain[2].meta["route_decision_id"] == "urn:mg:routedecision:zzzz"
+
+    latest = handle.latest()
+    assert latest is not None
+    assert latest.meta["recipient_id"] == "other-model"
+    reloaded = store.load(latest.state_id)
+    assert reloaded.meta == latest.meta
+

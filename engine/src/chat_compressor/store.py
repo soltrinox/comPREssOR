@@ -50,6 +50,10 @@ def _new_state_id() -> str:
     return f"st_{uuid.uuid4().hex}"
 
 
+# Optional StateNode.meta keys (CC-1 / comPASS routing attribution). Absent ⇒ 0.2.0 behavior.
+RECIPIENT_META_KEYS = ("recipient_id", "recipient_version", "route_decision_id")
+
+
 @dataclass
 class StateNode:
     state_id: str

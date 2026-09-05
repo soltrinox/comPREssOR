@@ -94,6 +94,9 @@ class PersistentAgentHandle:
         role: str = "user",
         *,
         flush_graph: bool | None = None,
+        recipient_id: str | None = None,
+        recipient_version: str | None = None,
+        route_decision_id: str | None = None,
     ) -> AgentOutput:
         prev = self.store.load_latest(self.agent_id)
         t_next = (prev.t + 1) if prev else 1
@@ -120,6 +123,14 @@ class PersistentAgentHandle:
             graph_path = snap
             self._last_graph_path = str(snap)
 
+        meta: dict[str, Any] = {"tool_status": "stub", "tokenizer_id": "hashed-ngram"}
+        if recipient_id is not None:
+            meta["recipient_id"] = recipient_id
+        if recipient_version is not None:
+            meta["recipient_version"] = recipient_version
+        if route_decision_id is not None:
+            meta["route_decision_id"] = route_decision_id
+
         t1 = time.perf_counter()
         node = self.store.save(
             agent_id=self.agent_id,
@@ -129,7 +140,7 @@ class PersistentAgentHandle:
             producer=result.producer,
             graph_path=graph_path,
             KV=result.KV,
-            meta={"tool_status": "stub", "tokenizer_id": "hashed-ngram"},
+            meta=meta,
             k_max=self.k_max,
         )
         persist_ms = (time.perf_counter() - t1) * 1000.0
