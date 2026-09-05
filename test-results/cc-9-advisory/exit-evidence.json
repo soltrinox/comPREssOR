@@ -1,0 +1,13 @@
+{
+  "cc": "CC-9",
+  "branch": "compass/cc9-advisory-handoff",
+  "negative_cases": [
+    "missing",
+    "stale_expires_at",
+    "corrupt_json"
+  ],
+  "positive_case": "fresh advisory line in additional_context",
+  "hook_continue_on_negatives": true,
+  "tests_file": "engine/tests/test_cc9_advisory.py",
+  "recorded_at": "2026-09-05T07:34:39Z"
+}
