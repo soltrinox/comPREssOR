@@ -77,3 +77,48 @@ def test_recipient_meta_roundtrip_and_lineage(tmp_path) -> None:
     assert chain[0].meta["route_decision_id"] == "urn:mg:routedecision:a1b2c3"
     assert chain[1].meta["recipient_version"] == "v2"
 
+
+
+def test_per_recipient_inject_ledger_partitions(tmp_path) -> None:
+    """CC-2: inject ledger partitions by recipient_id; absent ⇒ session ledger."""
+    from chat_compressor.store import (
+        append_inject_history,
+        load_inject_history,
+        recent_line_hashes,
+    )
+
+    agent = tmp_path / "agent"
+    agent.mkdir()
+
+    # Legacy / no-recipient path (0.2.0).
+    append_inject_history(agent, {"t": 1, "hashes": ["aaaa"], "packed_tokens": 10, "novel_tokens": 10})
+    append_inject_history(agent, {"t": 2, "hashes": ["bbbb"], "packed_tokens": 8, "novel_tokens": 4})
+    legacy = load_inject_history(agent)
+    assert len(legacy) == 2
+    assert recent_line_hashes(legacy, k=3) == {"aaaa", "bbbb"}
+
+    # Recipient A and B are isolated.
+    append_inject_history(
+        agent,
+        {"t": 3, "hashes": ["hashA1", "hashA2"], "packed_tokens": 12, "novel_tokens": 12},
+        recipient_id="model-a",
+    )
+    append_inject_history(
+        agent,
+        {"t": 4, "hashes": ["hashA3"], "packed_tokens": 6, "novel_tokens": 2},
+        recipient_id="model-a",
+    )
+    append_inject_history(
+        agent,
+        {"t": 5, "hashes": ["hashB1"], "packed_tokens": 9, "novel_tokens": 9},
+        recipient_id="model-b",
+    )
+
+    hist_a = load_inject_history(agent, recipient_id="model-a")
+    hist_b = load_inject_history(agent, recipient_id="model-b")
+    assert [h for row in hist_a for h in row["hashes"]] == ["hashA1", "hashA2", "hashA3"]
+    assert [h for row in hist_b for h in row["hashes"]] == ["hashB1"]
+    # Legacy session ledger untouched by recipient partitions.
+    assert len(load_inject_history(agent)) == 2
+    # New recipient starts empty.
+    assert load_inject_history(agent, recipient_id="model-c") == []

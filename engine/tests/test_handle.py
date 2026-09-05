@@ -103,3 +103,30 @@ def test_step_persists_recipient_meta_through_lineage(tmp_path) -> None:
     reloaded = store.load(latest.state_id)
     assert reloaded.meta == latest.meta
 
+
+
+def test_sample_for_recipient_hop_resets_dedup_and_budget(tmp_path, monkeypatch) -> None:
+    """CC-2..CC-5 smoke: hop clears suppress path and restores full budget."""
+    monkeypatch.setenv("CHAT_COMPRESSOR_CROSS_TURN_DEDUP", "1")
+    monkeypatch.setenv("CHAT_COMPRESSOR_FORWARD_BUDGET", "1024")
+    store = StateStore(tmp_path / "state")
+    handle = PersistentAgentHandle(
+        agent_id="hop-h",
+        store=store,
+        producer=EmbeddingProducer(d=64, k_max=8),
+        k_max=8,
+    )
+    for i in range(5):
+        handle.step(
+            f'Create todo "item-{i}" and keep milk bread groceries on the list. substance {i}.',
+            recipient_id="model-a",
+        )
+        handle.sample_for("cursor-sdk")
+    handle.step(
+        'Hop turn: keep milk bread groceries visible for the new model.',
+        recipient_id="model-b",
+    )
+    hop = handle.sample_for("cursor-sdk")
+    assert hop.method != "skip"
+    assert hop.budget == 1024
+    assert hop.packed_tokens > 0
