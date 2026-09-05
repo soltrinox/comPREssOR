@@ -20,8 +20,12 @@
       "properties": {
         "tokenizer_id": { "type": "string" },
         "tool_status": { "type": "string" },
-        "sampling_map": { "type": "string" }
-      }
+        "sampling_map": { "type": "string" },
+        "recipient_id": { "type": "string" },
+        "recipient_version": { "type": "string" },
+        "route_decision_id": { "type": "string" }
+      },
+      "additionalProperties": true
     },
     "tensors": {
       "type": "object",
