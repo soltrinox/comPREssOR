@@ -239,12 +239,99 @@ def _truncate_context(text: str, max_chars: int = _MAX_CONTEXT_CHARS) -> str:
     return text[: max_chars - 3].rstrip() + "..."
 
 
+
+def resolve_advisory_path(state_root: Path) -> Path:
+    """Path to compass-advisory/v1 JSON under the state root (CC-9).
+
+    Override with CHAT_COMPRESSOR_ADVISORY_PATH (absolute, or relative to state root).
+    Default: ``advisory/latest.json``.
+    """
+    load_hook_env()
+    raw = os.environ.get("CHAT_COMPRESSOR_ADVISORY_PATH", "").strip()
+    if raw:
+        candidate = Path(raw).expanduser()
+        if not candidate.is_absolute():
+            candidate = state_root / candidate
+        return candidate
+    return state_root / "advisory" / "latest.json"
+
+
+def _parse_advisory_expiry(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _advisory_required_ok(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    if payload.get("schema") != "compass-advisory/v1":
+        return False
+    if not payload.get("written_at") or not payload.get("expires_at"):
+        return False
+    if not payload.get("task_class"):
+        return False
+    rec = payload.get("recommendation")
+    if not isinstance(rec, dict) or not rec.get("model_id"):
+        return False
+    return True
+
+
+def _format_advisory_line(payload: dict[str, Any]) -> str:
+    rec = payload.get("recommendation") or {}
+    model_id = rec.get("model_id") or "unknown"
+    task_class = payload.get("task_class") or "general"
+    rationale = (payload.get("rationale") or "").strip()
+    line = (
+        "COMPASS_ADVISORY: "
+        f"task_class={task_class}; recommended_model={model_id}"
+    )
+    if rationale:
+        # Keep a single-line hint; truncate aggressively so we stay under context cap.
+        one = " ".join(rationale.split())
+        if len(one) > 240:
+            one = one[:237].rstrip() + "..."
+        line += f"; {one}"
+    return line
+
+
+def _load_advisory_context_line(state_root: Path) -> str | None:
+    """Return advisory context line when fresh; else None. Never raises (CC-9 fail-open)."""
+    try:
+        path = resolve_advisory_path(state_root)
+        if not path.is_file():
+            return None
+        raw = path.read_text(encoding="utf-8")
+        payload = json.loads(raw)
+        if not _advisory_required_ok(payload):
+            return None
+        expires = _parse_advisory_expiry(payload.get("expires_at"))
+        if expires is None:
+            return None
+        now = datetime.now(timezone.utc)
+        if expires <= now:
+            return None
+        return _format_advisory_line(payload)
+    except Exception:  # noqa: BLE001 — corrupt/unreadable advisory must not block
+        return None
+
+
 def _compose_additional_context(
     handle: PersistentAgentHandle,
     sampled_text: str,
     agent_id: str,
     *,
     method: str = "",
+    state_root: Path | None = None,
 ) -> str:
     parts: list[str] = [
         "CHAT-COMPRESSOR session memory (prefer HOT_SET / typed / ranked FORWARD_GIST; do not restate full history).",
@@ -259,6 +346,10 @@ def _compose_additional_context(
     latest = handle.latest()
     if latest is not None:
         parts.append(f"STATE: agent_id={agent_id} t={latest.t} state_id={latest.state_id}")
+    if state_root is not None:
+        advisory_line = _load_advisory_context_line(state_root)
+        if advisory_line:
+            parts.append(advisory_line)
     return _truncate_context("\n\n".join(parts))
 
 
@@ -312,7 +403,7 @@ def handle_before_submit(
         rank_ms = float(sampled.rank_ms)
         rate = float(sampled.rate)
         budget = int(sampled.budget or budget)
-        context = _compose_additional_context(handle, sampled.text, agent_id, method=method)
+        context = _compose_additional_context(handle, sampled.text, agent_id, method=method, state_root=state_root)
         log_stage(
             state_root,
             _format_stage(
@@ -482,7 +573,7 @@ def handle_session_start(
     except Exception as exc:  # noqa: BLE001 — fail-open path
         error_class = type(exc).__name__
         log_error(state_root, f"sessionStart sample error={exc!r}\n{traceback.format_exc()}")
-    context = _compose_additional_context(handle, gist, agent_id, method=method)
+    context = _compose_additional_context(handle, gist, agent_id, method=method, state_root=state_root)
     log_stage(
         state_root,
         _format_stage(
