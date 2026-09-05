@@ -43,3 +43,14 @@ Optional file-based handoff from an external router (comPASS). When present and 
 - **Missing, stale, or corrupt advisory MUST NOT block Agent Chat** — hook still returns the event-safe default (`continue: true` / empty context)
 - Hook process never loads provider keys to read the advisory file
 
+## Hop legality (CC-7)
+
+`PersistentAgentHandle.hop_legal()` must be consulted before changing
+`recipient_id` mid-session. Returns false with pending tool state. Details:
+[`HOP_LEGAL.md`](./HOP_LEGAL.md).
+
+## Tensor quantization (CC-10)
+
+Optional env `CHAT_COMPRESSOR_TENSOR_QUANT` (`float32` default, or `float16` /
+`int8`). Scheme is recorded on `StateNode.meta.quantization`. Default path is
+unchanged float32 mmap behavior.

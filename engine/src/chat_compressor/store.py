@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import uuid
 from dataclasses import dataclass, field
@@ -52,6 +53,83 @@ def _new_state_id() -> str:
 
 # Optional StateNode.meta keys (CC-1 / comPASS routing attribution). Absent ⇒ 0.2.0 behavior.
 RECIPIENT_META_KEYS = ("recipient_id", "recipient_version", "route_decision_id")
+
+# --- CC-10 optional tensor quantization ---------------------------------
+QUANT_FLOAT32 = "float32"
+QUANT_FLOAT16 = "float16"
+QUANT_INT8 = "int8"
+_VALID_QUANTS = {QUANT_FLOAT32, QUANT_FLOAT16, QUANT_INT8}
+
+# Behavioral reconstruction budget: mean row cosine similarity vs original.
+DEFAULT_RECON_COSINE_BUDGET = 0.99
+
+
+def tensor_quantization_scheme() -> str:
+    """Env CHAT_COMPRESSOR_TENSOR_QUANT: float32 (default) | float16 | int8."""
+    raw = (os.environ.get("CHAT_COMPRESSOR_TENSOR_QUANT") or QUANT_FLOAT32).strip().lower()
+    if raw in {"fp16", "float16", "f16"}:
+        return QUANT_FLOAT16
+    if raw in {"int8", "i8", "qint8"}:
+        return QUANT_INT8
+    return QUANT_FLOAT32
+
+
+def quantize_C(C: np.ndarray, scheme: str) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
+    """Quantize C for storage. Returns (tensors_extra_or_override, meta_fields).
+
+    float32: no change (caller writes C as float32).
+    float16: stores C as float16.
+    int8: symmetric per-row scale; stores C_int8 + C_scale (float32, shape k).
+    """
+    arr = np.asarray(C, dtype=np.float32)
+    if arr.ndim == 1:
+        arr = arr[None, :]
+    scheme = scheme if scheme in _VALID_QUANTS else QUANT_FLOAT32
+    meta = {"quantization": scheme}
+    if scheme == QUANT_FLOAT32:
+        return {"C": arr}, meta
+    if scheme == QUANT_FLOAT16:
+        return {"C": arr.astype(np.float16)}, meta
+    # int8 symmetric per-row
+    absmax = np.max(np.abs(arr), axis=1).astype(np.float32)
+    absmax = np.where(absmax < 1e-12, 1.0, absmax)
+    scale = (absmax / 127.0).astype(np.float32)
+    q = np.clip(np.round(arr / scale[:, None]), -127, 127).astype(np.int8)
+    return {"C": q, "C_scale": scale}, meta
+
+
+def dequantize_C(tensors: dict[str, np.ndarray], meta: dict[str, Any] | None = None) -> np.ndarray:
+    """Reconstruct float32 C from possibly quantized tensors."""
+    meta = meta or {}
+    scheme = str(meta.get("quantization") or QUANT_FLOAT32).lower()
+    C = tensors["C"]
+    if scheme in {QUANT_FLOAT16, "fp16", "f16"} or C.dtype == np.float16:
+        return np.asarray(C, dtype=np.float32)
+    if scheme in {QUANT_INT8, "i8", "qint8"} or C.dtype == np.int8:
+        scale = tensors.get("C_scale")
+        if scale is None:
+            return np.asarray(C, dtype=np.float32)
+        scale = np.asarray(scale, dtype=np.float32)
+        return (np.asarray(C, dtype=np.float32) * scale[:, None]).astype(np.float32)
+    return np.asarray(C, dtype=np.float32)
+
+
+def reconstruction_cosine(original: np.ndarray, reconstructed: np.ndarray) -> float:
+    """Mean per-row cosine similarity; used for CC-10 acceptance budget."""
+    a = np.asarray(original, dtype=np.float32)
+    b = np.asarray(reconstructed, dtype=np.float32)
+    if a.ndim == 1:
+        a = a[None, :]
+    if b.ndim == 1:
+        b = b[None, :]
+    if a.shape != b.shape or a.shape[0] == 0:
+        return 0.0
+    dots = np.sum(a * b, axis=1)
+    na = np.linalg.norm(a, axis=1)
+    nb = np.linalg.norm(b, axis=1)
+    denom = np.maximum(na * nb, 1e-12)
+    return float(np.mean(dots / denom))
+
 
 
 @dataclass
@@ -130,7 +208,18 @@ class StateStore:
         agent_dir = self.root / agent_id
         agent_dir.mkdir(parents=True, exist_ok=True)
         blob_path = agent_dir / f"t{t:04d}.safetensors"
-        tensors: dict[str, np.ndarray] = {"C": arr, "M": mask}
+        # CC-10: optional quantization (default float32 — unchanged local mmap).
+        # Only record quantization in meta when non-default so absent-meta paths
+        # stay identical to 0.2.0.
+        meta_out: dict[str, Any] = dict(meta or {})
+        scheme = str(meta_out.get("quantization") or tensor_quantization_scheme())
+        q_tensors, q_meta = quantize_C(arr, scheme)
+        if scheme != QUANT_FLOAT32:
+            meta_out.update(q_meta)
+        elif "quantization" in meta_out and meta_out.get("quantization") == QUANT_FLOAT32:
+            # Explicit float32 from caller — keep; otherwise omit for 0.2.0 parity.
+            pass
+        tensors: dict[str, np.ndarray] = {"M": mask, **q_tensors}
         if KV is not None:
             tensors["KV"] = np.asarray(KV, dtype=np.float32)
         save_file(tensors, str(blob_path))
@@ -152,7 +241,7 @@ class StateStore:
                     producer,
                     graph_str,
                     created,
-                    json.dumps(meta or {}),
+                    json.dumps(meta_out),
                 ),
             )
         return self.load(state_id)

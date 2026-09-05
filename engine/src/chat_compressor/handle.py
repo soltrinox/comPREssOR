@@ -81,6 +81,8 @@ class PersistentAgentHandle:
         self._turn_index = 0
         self._last_graph_path: str | None = None
         self.last_sample_ms: float = 0.0
+        # CC-7: in-memory pending-tool flag (hop illegal while set).
+        self._pending_tool: bool = False
 
     def _agent_dir(self) -> Path:
         return Path(self.store.root) / self.agent_id
@@ -314,6 +316,35 @@ class PersistentAgentHandle:
             return ""
         turns.sort(key=lambda n: (n.valid_start, n.attrs.get("index", 0)))
         return (turns[-1].summary or "").strip()
+
+
+    def set_pending_tool(self, pending: bool = True) -> None:
+        """Mark whether a tool call is in flight (CC-7 hop gate)."""
+        self._pending_tool = bool(pending)
+
+    def clear_pending_tool(self) -> None:
+        """Clear pending-tool flag at a clean turn boundary."""
+        self._pending_tool = False
+
+    def hop_legal(self) -> bool:
+        """Return False when a hop would cross pending tool state (CC-7).
+
+        Legal only at turn boundaries with no pending tool state.
+        Default: tool_status stub/unknown and no pending flag ⇒ True
+        (do not block hops that 0.2.0 would have allowed).
+        """
+        if self._pending_tool:
+            return False
+        node = self.latest()
+        if node is None:
+            return True
+        meta = node.meta or {}
+        if meta.get("pending_tool") is True:
+            return False
+        status = str(meta.get("tool_status") or "").strip().lower()
+        if status in {"pending", "in_flight", "awaiting", "tool_pending"}:
+            return False
+        return True
 
     def expand_spans(self, query: str, k: int = 4) -> list[str]:
         """Local-only: nearest verbatim chunks from tNNNN.spans.json sidecars."""
