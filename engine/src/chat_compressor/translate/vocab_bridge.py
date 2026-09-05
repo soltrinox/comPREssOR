@@ -240,6 +240,7 @@ class Pattern1Bridge:
         recent_hashes: set[str] | None = None,
         openitem_changed: bool = True,
         node_superseded: bool = False,
+        recipient_changed: bool = False,
         allow_skip: bool = False,
     ) -> SampledPayload:
         """Primary forward channel: HOT_SET → typed → ranked chunks; P1 debug-only."""
@@ -272,6 +273,7 @@ class Pattern1Bridge:
             recent_hashes=recent_hashes,
             openitem_changed=openitem_changed,
             node_superseded=node_superseded,
+            recipient_changed=recipient_changed,
             allow_skip=allow_skip,
         )
         method = packed.method

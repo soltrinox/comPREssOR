@@ -175,17 +175,58 @@ class PersistentAgentHandle:
         self._last_graph_path = str(snap)
         return self._last_graph_path
 
-    def sample_for(self, target: str, query: str | None = None) -> SampledPayload:
+    def sample_for(
+        self,
+        target: str,
+        query: str | None = None,
+        *,
+        recipient_id: str | None = None,
+    ) -> SampledPayload:
         """cursor-sdk => packed HOT_SET/typed/ranked text. local:<id> may return C_B floats."""
         node = self.latest()
         q = (query or "").strip() or self._last_user_query()
         hot = self.graph.hot_set(query=q or None)
         window = self.graph.window_text()
         typed = self.graph.typed_projection(q or None, hot_set=hot)
-        history = load_inject_history(self._agent_dir())
+
+        # Resolve recipient: explicit arg, else latest StateNode.meta (CC-1).
+        rid = recipient_id
+        if rid is None and node is not None:
+            meta_rid = (node.meta or {}).get("recipient_id")
+            if meta_rid is not None and str(meta_rid).strip():
+                rid = str(meta_rid).strip()
+        elif rid is not None:
+            rid = str(rid).strip() or None
+
+        # CC-2: partition inject ledger by recipient_id; absent ⇒ session ledger.
+        history = load_inject_history(self._agent_dir(), recipient_id=rid)
         t = int(node.t) if node is not None else 0
+
+        # CC-3/CC-5: previous recipient from parent lineage node.
+        prev_rid: str | None = None
+        if node is not None and node.parent_id:
+            try:
+                parent = self.store.load(node.parent_id)
+            except KeyError:
+                parent = None
+            if parent is not None:
+                raw_prev = (parent.meta or {}).get("recipient_id")
+                if raw_prev is not None and str(raw_prev).strip():
+                    prev_rid = str(raw_prev).strip()
+
+        if rid is None:
+            # Absent recipient_id ⇒ exact 0.2.0 session-scoped behavior.
+            recipient_changed = False
+            recipient_continued = True
+            recipient_t = t
+        else:
+            recipient_changed = prev_rid != rid
+            recipient_continued = prev_rid == rid
+            recipient_t = self._recipient_turn_count(rid)
+
         novelty = rolling_novelty(history, k=3)
-        budget = adaptive_budget(t, novelty, cap=forward_budget())
+        # CC-5: warmup against per-recipient turn counter, not session t alone.
+        budget = adaptive_budget(recipient_t, novelty, cap=forward_budget())
         if not cross_turn_dedup_enabled():
             budget = forward_budget()
         last = history[-1] if history else {}
@@ -197,7 +238,12 @@ class PersistentAgentHandle:
             openitem_changed = self.graph.openitem_signature() != prev_sig
             node_superseded = self.graph.supersede_count() > int(last.get("supersede_count") or 0)
             recent = recent_line_hashes(history, k=3)
-        allow_skip = bool(cross_turn_dedup_enabled() and t > WARMUP_TURNS)
+        # CC-4: never allow_skip on a recipient's first turn (or hop).
+        allow_skip = bool(
+            cross_turn_dedup_enabled()
+            and recipient_continued
+            and recipient_t > WARMUP_TURNS
+        )
         pack_kwargs = {
             "hot_set": hot,
             "window_text": window,
@@ -208,6 +254,7 @@ class PersistentAgentHandle:
             "recent_hashes": recent,
             "openitem_changed": openitem_changed,
             "node_superseded": node_superseded,
+            "recipient_changed": recipient_changed,
             "allow_skip": allow_skip,
         }
         t0 = time.perf_counter()
@@ -224,6 +271,7 @@ class PersistentAgentHandle:
                         {
                             "state_id": None if node is None else node.state_id,
                             "t": t,
+                            "recipient_t": recipient_t,
                             "hashes": list(sampled.line_hashes),
                             "text": (sampled.text or "")[:8000],
                             "openitem_sig": self.graph.openitem_signature(),
@@ -232,6 +280,7 @@ class PersistentAgentHandle:
                             "novel_tokens": int(sampled.novel_tokens),
                             "dup_suppressed_tokens": int(sampled.dup_suppressed_tokens),
                         },
+                        recipient_id=rid,
                     )
                 return sampled
             if target.startswith("local:"):
@@ -243,6 +292,17 @@ class PersistentAgentHandle:
             raise ValueError(f"unknown sample target {target}")
         finally:
             self.last_sample_ms = (time.perf_counter() - t0) * 1000.0
+
+    def _recipient_turn_count(self, recipient_id: str) -> int:
+        """How many lineage nodes record this recipient_id (CC-5 warmup key)."""
+        rid = str(recipient_id).strip()
+        if not rid:
+            return 0
+        return sum(
+            1
+            for n in self.store.lineage(self.agent_id)
+            if str((n.meta or {}).get("recipient_id") or "").strip() == rid
+        )
 
     def _last_user_query(self) -> str:
         turns = [

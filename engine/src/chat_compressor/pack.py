@@ -82,6 +82,7 @@ def pack_forward(
     recent_hashes: set[str] | None = None,
     openitem_changed: bool = True,
     node_superseded: bool = False,
+    recipient_changed: bool = False,
     allow_skip: bool = False,
     marginal_jaccard: float = MARGINAL_JACCARD,
     skip_floor_tokens: int = SKIP_FLOOR_TOKENS,
@@ -95,7 +96,8 @@ def pack_forward(
     method = "hot_set"
     dup_suppressed = 0
     suppress = set(recent_hashes or ())
-    if node_superseded or not cross_turn_dedup_enabled():
+    # CC-3: recipient change clears suppression like supersede (hop safety).
+    if node_superseded or recipient_changed or not cross_turn_dedup_enabled():
         suppress = set()
 
     def _blocked(text: str) -> bool:
@@ -188,6 +190,7 @@ def pack_forward(
         and cross_turn_dedup_enabled()
         and not openitem_changed
         and not node_superseded
+        and not recipient_changed
         and packed < skip_floor_tokens
     )
     if skip:
