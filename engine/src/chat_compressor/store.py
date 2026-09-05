@@ -224,40 +224,102 @@ def inject_history_path(agent_dir: str | Path) -> Path:
     return Path(agent_dir) / INJECT_HISTORY_NAME
 
 
-def load_inject_history(agent_dir: str | Path) -> list[dict[str, Any]]:
+def _empty_inject_doc() -> dict[str, Any]:
+    return {"turns": [], "recipients": {}}
+
+
+def _read_inject_doc(agent_dir: str | Path) -> dict[str, Any]:
+    """Load inject ledger document. Supports legacy list and turns-only shapes."""
     path = inject_history_path(agent_dir)
     if not path.is_file():
-        return []
+        return _empty_inject_doc()
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return []
-    if isinstance(raw, dict):
-        rows = raw.get("turns")
-        return list(rows) if isinstance(rows, list) else []
+        return _empty_inject_doc()
     if isinstance(raw, list):
-        return raw
-    return []
+        return {"turns": list(raw), "recipients": {}}
+    if not isinstance(raw, dict):
+        return _empty_inject_doc()
+    turns = raw.get("turns")
+    turns_list = list(turns) if isinstance(turns, list) else []
+    recipients_raw = raw.get("recipients")
+    recipients: dict[str, list[dict[str, Any]]] = {}
+    if isinstance(recipients_raw, dict):
+        for key, val in recipients_raw.items():
+            if isinstance(val, list):
+                recipients[str(key)] = list(val)
+    return {"turns": turns_list, "recipients": recipients}
 
 
-def save_inject_history(agent_dir: str | Path, turns: list[dict[str, Any]]) -> Path:
+def _write_inject_doc(agent_dir: str | Path, doc: dict[str, Any]) -> Path:
     dest = inject_history_path(agent_dir)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    kept = turns[-INJECT_HISTORY_KEEP:]
+    turns = list(doc.get("turns") or [])[-INJECT_HISTORY_KEEP:]
+    recipients_in = doc.get("recipients") or {}
+    recipients: dict[str, list[dict[str, Any]]] = {}
+    if isinstance(recipients_in, dict):
+        for key, val in recipients_in.items():
+            if isinstance(val, list) and val:
+                recipients[str(key)] = list(val)[-INJECT_HISTORY_KEEP:]
+    payload: dict[str, Any] = {"turns": turns}
+    if recipients:
+        payload["recipients"] = recipients
     dest.write_text(
-        json.dumps({"turns": kept}, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     return dest
 
 
+def load_inject_history(
+    agent_dir: str | Path,
+    recipient_id: str | None = None,
+) -> list[dict[str, Any]]:
+    """Return inject turns. Absent recipient_id ⇒ legacy session-scoped ledger (0.2.0)."""
+    doc = _read_inject_doc(agent_dir)
+    if recipient_id is None:
+        return list(doc.get("turns") or [])
+    rid = str(recipient_id).strip()
+    if not rid:
+        return list(doc.get("turns") or [])
+    recipients = doc.get("recipients") or {}
+    rows = recipients.get(rid)
+    return list(rows) if isinstance(rows, list) else []
+
+
+def save_inject_history(
+    agent_dir: str | Path,
+    turns: list[dict[str, Any]],
+    recipient_id: str | None = None,
+) -> Path:
+    """Persist inject turns. With recipient_id, write that partition only."""
+    doc = _read_inject_doc(agent_dir)
+    kept = list(turns)[-INJECT_HISTORY_KEEP:]
+    if recipient_id is None or not str(recipient_id).strip():
+        doc["turns"] = kept
+    else:
+        recipients = dict(doc.get("recipients") or {})
+        recipients[str(recipient_id).strip()] = kept
+        doc["recipients"] = recipients
+    return _write_inject_doc(agent_dir, doc)
+
+
 def append_inject_history(
     agent_dir: str | Path,
     row: dict[str, Any],
+    recipient_id: str | None = None,
 ) -> list[dict[str, Any]]:
-    turns = load_inject_history(agent_dir)
-    turns.append(row)
-    save_inject_history(agent_dir, turns)
+    """Append one inject row to the session ledger or a recipient partition (CC-2)."""
+    rid = str(recipient_id).strip() if recipient_id is not None else None
+    if rid == "":
+        rid = None
+    turns = load_inject_history(agent_dir, recipient_id=rid)
+    entry = dict(row)
+    if rid is not None:
+        entry.setdefault("recipient_id", rid)
+    turns.append(entry)
+    save_inject_history(agent_dir, turns, recipient_id=rid)
     return turns
 
 
